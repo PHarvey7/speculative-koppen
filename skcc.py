@@ -55,7 +55,7 @@ def usage():
     -q:<fname>, --precns=<fname>   : Take precipitation input for northern-hemisphere summer from the image '<fname>'. Required.
     -v:<fname>, --tempprof=<fname> : Take the input temperature color profile from the filename '<fname>'. 
     -r:<fname>, --precprof=<fname> : Take the input precipitation color profile from the filename '<fname>'.
-    -c:<fname>, --outprof=<fname>  : Take the output color profile from the filename '<fname>'. ''')
+    -k:<fname>, --outprof=<fname>  : Take the output color profile from the filename '<fname>'. ''')
     sys.exit(0)
 
 def version():
@@ -67,7 +67,10 @@ def optErr():
     sys.exit(0)
 
 def outputToFile(filename, img):
-    img.save(filename, 'PNG')
+    try:
+        img.save(filename, 'PNG')
+    except:
+        print('Error: Could not write to file ' + filename)
     sys.exit(0)
 
 # Converts an input pixel color to a temperature value.
