@@ -1,0 +1,47 @@
+# This file defines the output color profile the program uses by default.
+# The program does not actually reference this file; the defaults are
+# contained within the program itself. This file is a sample of the output profile format.
+# Custom output color profiles should use this format.
+# Lines beginning with '#' or containing only whitepsace are ignored.
+# Any other line should have the form <Category>:(<R>, <G>, <B>)
+# <Category> should be a Köppen-Geiger climate category, or 'Ocean'.
+# <R>, <G> and <B> should be integers in the range 0-255, representing the red,
+# green and blue values respectively for the output color that will correspond with
+# the stated category.
+# All of the climate categories in the sample below must be present in an output profile,
+# although different categories can share output colors in which case they will be 
+# indistinguishable in the output. The default profile below does this with the As/Aw,
+# Csb/Cwb, and Cwb/Cwc categories.
+
+Af    :(11, 36, 250)
+As    :(76, 171, 247)
+Aw    :(76, 171, 247)
+Am    :(21, 123, 251)
+Cfa   :(199, 253, 92)
+Csa   :(255, 253, 56)
+Cwa   :(153, 253, 154)
+Cfb   :(109, 253, 70)
+Csb   :(198, 197, 41)
+Cwb   :(103, 197, 104)
+Cfc   :(60, 197, 35)
+Csc   :(198, 197, 41)
+Cwc   :(103, 197, 104)
+Dfa   :(45, 255, 254)
+Dsa   :(252, 40, 251)
+Dwa   :(172, 179, 253)
+Dfb   :(66, 200, 252)
+Dsb   :(196, 29, 197)
+Dwb   :(92, 122, 216)
+Dfc   :(16, 126, 124)
+Dsc   :(149, 55, 147)
+Dwc   :(77, 84, 178)
+Dfd   :(6, 69, 93)
+Dsd   :(149, 101, 148)
+Dwd   :(50, 14, 133)
+ET    :(178, 178, 178)
+EF    :(104, 104, 104)
+BSh   :(243, 162, 39)
+BSk   :(254, 218, 108)
+BWh   :(251, 13, 27)
+BWk   :(252, 151, 151)
+Ocean :(107, 165, 210)

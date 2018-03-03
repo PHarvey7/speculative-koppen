@@ -1,0 +1,25 @@
+# This is the precipitation input color profile skcc uses by default.
+# This file is just a sample; the program default does not reference it.
+# Custom precipitation input profiles should use the format shown in this file.
+# Lines beginning with '#' or consisting only of whitespace are ignored.
+# All other lines should be of the form:
+# <Name>:(<R>, <G>, <B>):<Val>
+# Where <Name> is solely for readability and can consist of any characters besides ':'
+# <R> <G> and <B> should be positive values in range 0-255, describing the color for this temperature
+# in the input data. These can be fractional/include a decimal point.
+# <Val> should be the average precipitation value for this category, in millimeters of precipitation. 
+# For example, if a color denotes precipitation from 100mm to 200mm, <Val> in the color 
+# profile for that color should be 150. 
+# As a special case, <Val> can also be the character 'O' (not zero '0'), in which case that denotes an ocean color
+# that will be ignored for climate classification and simply output as the output profile's ocean color. 
+# Aribtrary whitespace can be placed before each delimiter (:), provided it still remains a single line.
+
+(Heaviest)  :(135, 0, 180)    :300
+            :(130, 60, 200)   :170
+            :(105, 70, 200)   :105
+            :(60, 60, 180)    :55
+            :(70, 95, 150)    :30
+            :(55, 85, 100)    :15
+            :(35, 50, 50)     :7.5
+(Driest)    :(20, 20, 20)     :2.5
+Ocean       :(107, 165, 210)  :O

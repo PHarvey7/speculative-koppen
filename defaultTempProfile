@@ -1,0 +1,27 @@
+# The temperature profile used by default.
+# Note that this is a sample - the default profile is coded directly into the program,
+# not referenced by this file. Custom temperature input profiles should use this format.
+# Lines beginning with '#' or consisting only of whitespace are ignored.
+# All other lines should be of the form:
+# <Name>:(<R>, <G>, <B>):<Val>
+# Where <Name> is solely for readability and can consist of any characters besides ':'
+# <R> <G> and <B> should be positive values in range 0-255, describing the color for this temperature
+# in the input data. They can be fractional/include a decimal point.
+# <Val> should be the average temperature value for this category, in degrees centigrade. 
+# For example, if a color denotes temperatures from 5C to 15C, <Val> in the color 
+# profile for that color should be 10. 
+# As a special case, <Val> can also be the character 'O' (not zero '0'), in which case that denotes an ocean color
+# that will be ignored for climate classification and simply output as the output profile's ocean color. 
+# Aribtrary whitespace can be placed before each delimiter (:), provided it still remains a single line.
+
+Severely Hot  :(160, 0, 65)     :38
+Very Hot      :(210, 60, 80)    :31
+Hot           :(245, 110, 65)   :25
+Warm          :(250, 175, 95)   :20
+Mild          :(255, 225, 140)  :14
+Cool          :(230, 245, 150)  :5
+Cold          :(170, 220, 165)  :-5
+Very Cold     :(100, 195, 165)  :-18
+Severely Cold :(50, 135, 190)   :-32
+Deadly Cold   :(95, 80, 160)    :-40
+Ocean         :(107, 165, 210)  :O
