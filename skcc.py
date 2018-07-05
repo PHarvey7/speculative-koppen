@@ -45,6 +45,7 @@ def usage():
   Options:
     -h, --help    : Displays this message
     -v, --version : Displays the current version of skcc.py
+    -s, --quiet   : Silences successful completion output
     -o:<fname>, --outfile=<fname>  : Outputs the resulting image to the filepath '<fname>', 
                                     requires two temperature and two precipitation inputs. Required.
     -t:<fname>, --tempnw=<fname>   : Takes temperature input data for northern-hemisphere winter 
@@ -360,7 +361,7 @@ def readOutputProfile(fname):
 # Begin script
 
 try:
-    options, xarguments = getopt.getopt(sys.argv[1:], 'hvo:t:u:p:q:v:r:k:', ['help', 'version', 'outfile=', 'tempnw=', 
+    options, xarguments = getopt.getopt(sys.argv[1:], 'hvso:t:u:p:q:v:r:k:', ['help', 'version', 'quiet', 'outfile=', 'tempnw=', 
                                                                        'tempns=', 'precnw=', 'precns=', 'tempprof=',
                                                                            'precprof=', 'outprof='])
 except getopt.error:
@@ -378,6 +379,8 @@ outfileName = ''
 tempProfile = InputProfile(tColorTableDefault, defaultOceanColor)
 precProfile = InputProfile(pColorTableDefault, defaultOceanColor)
 outProfile = OutputProfile(kColorTableDefault)
+
+quiet = False
 
 #Parse options
 for a in options[:]:
@@ -427,6 +430,8 @@ for a in options[:]:
             optErr()
         else:
             outProfile = readOutputProfile(a[1])
+    if a[0] == '-s' or a[0] == '--quiet':
+        quiet = True
 if ((not tempFileNameNS) or (not tempFileNameNW) or (not precFileNameNS) or (not precFileNameNW)):
     print('Error: One or more required input data files were not specified.')
     sys.exit(0)
@@ -435,6 +440,7 @@ if (not outfileName):
     sys.exit(0)
 outputToFile(outfileName, buildClimates(tempFileNameNS, tempFileNameNW, precFileNameNS, precFileNameNW, 
                                         tempProfile, precProfile, outProfile))
-stopTime = time.time()
-timeDiffRounded = format(stopTime - startTime, '.2f')
-print('Output climate map to ' + outfileName + ' (' + timeDiffRounded + 's).')
+if not quiet:
+    stopTime = time.time()
+    timeDiffRounded = format(stopTime - startTime, '.2f')
+    print('Output climate map to ' + outfileName + ' (' + timeDiffRounded + 's).')
