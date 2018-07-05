@@ -248,12 +248,18 @@ def makeRGBConversion(img1, img2, img3, img4):
             sys.exit(0)
         else:
             bandIds.append((bandList.index('R'), bandList.index('G'), bandList.index('B')))
-    def getRGB(pxTuple):
-        return ((pxTuple[0][bandIds[0][0]], pxTuple[0][bandIds[0][1]], pxTuple[0][bandIds[0][2]]),
-                (pxTuple[1][bandIds[1][0]], pxTuple[1][bandIds[1][1]], pxTuple[1][bandIds[1][2]]),
-                (pxTuple[2][bandIds[2][0]], pxTuple[2][bandIds[2][1]], pxTuple[2][bandIds[2][2]]),
-                (pxTuple[3][bandIds[3][0]], pxTuple[3][bandIds[3][1]], pxTuple[3][bandIds[3][2]]))
-    return getRGB
+    if (bandList[0] == ('R', 'G', 'B')) and (bandList[1] == ('R', 'G', 'B')) and (bandIds[2] == ('R', 'G', 'B')) and (bandIds[3] == ('R', 'G', 'B')):
+        # Special case to improve performance if input is all RGB images with no channels
+        def retRGB(pxTuple):
+            return pxTuple
+        return retRGB
+    else:
+        def getRGB(pxTuple):
+            return ((pxTuple[0][bandIds[0][0]], pxTuple[0][bandIds[0][1]], pxTuple[0][bandIds[0][2]]),
+                    (pxTuple[1][bandIds[1][0]], pxTuple[1][bandIds[1][1]], pxTuple[1][bandIds[1][2]]),
+                    (pxTuple[2][bandIds[2][0]], pxTuple[2][bandIds[2][1]], pxTuple[2][bandIds[2][2]]),
+                    (pxTuple[3][bandIds[3][0]], pxTuple[3][bandIds[3][1]], pxTuple[3][bandIds[3][2]]))
+        return getRGB
     
 
 # Builds a raw image representing the Köppen-Geiger climate classification based on
