@@ -232,11 +232,35 @@ def getClimateColor(pxTuple, tempProfile, precProfile, outProfile, isNorthernHem
             print('Error: Invalid Köppen-Geiger climate class (should never happen): ' + climateCode)
             sys.exit(0)
 
+# Returns a function to retrieve the RGB color values of a pixel.
+def makeRGBConversion(img1, img2, img3, img4):
+    bands = [img1.getbands(), img2.getbands(), img3.getbands(), img4.getbands()]
+    bandIds = []
+    for bandList in bands:
+        if not ('R' in bandList):
+            print('Error: No red color channel in one or more input images.')
+            sys.exit(0)
+        elif not ('G' in bandList):
+            print('Error: No green color channel in one or more input images.')
+            sys.exit(0)
+        elif not ('B' in bandList):
+            print('Error: No blue color channel in one or more input images.')
+            sys.exit(0)
+        else:
+            bandIds.append((bandList.index('R'), bandList.index('G'), bandList.index('B')))
+    def getRGB(pxTuple):
+        return ((pxTuple[0][bandIds[0][0]], pxTuple[0][bandIds[0][1]], pxTuple[0][bandIds[0][2]]),
+                (pxTuple[1][bandIds[1][0]], pxTuple[1][bandIds[1][1]], pxTuple[1][bandIds[1][2]]),
+                (pxTuple[2][bandIds[2][0]], pxTuple[2][bandIds[2][1]], pxTuple[2][bandIds[2][2]]),
+                (pxTuple[3][bandIds[3][0]], pxTuple[3][bandIds[3][1]], pxTuple[3][bandIds[3][2]]))
+    return getRGB
+    
+
 # Builds a raw image representing the Köppen-Geiger climate classification based on
 # the input temperature and precipitation maps interpreted via the input temperature
 # and precipitation color profiles.
 def buildClimates(t1name, t2name, p1name, p2name, tempProfile, precProfile, outProfile):
-    try:
+#    try:
         temperature1 = Image.open(t1name)
         temperature2 = Image.open(t2name)
         precipitation1 = Image.open(p1name)
@@ -246,14 +270,15 @@ def buildClimates(t1name, t2name, p1name, p2name, tempProfile, precProfile, outP
         precs1 = precipitation1.getdata()
         precs2 = precipitation2.getdata()
         rawData = zip(temps1, temps2, precs1, precs2)
-        newPix = [getClimateColor(pxTuple, tempProfile, precProfile, outProfile, idx < (len(temps1) / 2)) 
+        getRGBs = makeRGBConversion(temperature1, temperature2, precipitation1, precipitation2)
+        newPix = [getClimateColor(getRGBs(pxTuple), tempProfile, precProfile, outProfile, idx < (len(temps1) / 2)) 
                   for idx, pxTuple in enumerate(rawData)]
         climateImg = Image.new('RGB', (temperature1.size[0], temperature1.size[1]))
         climateImg.putdata(newPix)
-    except:
-        print('Error: General error occurred (check input data filenames and correctness)')
-        sys.exit(0)
-    return climateImg
+#    except:
+#        print('Error: General error occurred (check input data filenames and correctness)')
+#        sys.exit(0)
+        return climateImg
 
 # Reads an input profile specification and returns an InputProfile object
 # from it.
