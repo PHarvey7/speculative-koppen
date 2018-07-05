@@ -9,9 +9,9 @@ skcc.py requires Python 3, with Pillow (https://github.com/python-pillow/Pillow)
 
 USAGE
 
-The input data should take the form of four images of equal dimensions in RGB format (with no alpha or other additional channels). These images should represent temperature and precipitation for each of a winter extreme month and summer extreme month, respectively. These should be represented by the colors in the image - temperatures and precipitations should be colored according to a category, wherein temperatures and precipitations of a particular color will all be grouped together and assigned one value, which typically should be the average for the temperature or precipitation band the category represents. skcc should support multiple input file formats, although given the necessary color precision lossless formats are reccommended. skcc has been tested exclusively using .png files. 
+The input data should take the form of four images of equal dimensions in RGB format (with no alpha or other additional channels). These images should represent temperature and precipitation for each of a winter extreme month and summer extreme month, respectively. These should be represented by the colors in the image - temperatures and precipitations should be colored according to a category, wherein temperatures and precipitations of a particular color will all be grouped together and assigned one value, which typically should be the average for the temperature or precipitation band the category represents. skcc should support multiple input file formats, although given the necessary color precision lossless formats are recommended. skcc has been tested exclusively using .png files. 
 
-What colors represent what temperature/precipitation bands, as well as what color respresents ocean, can be determined by providing input profiles as additional inputs, which map input RBG colors to temperature/precipitation averages. Temperature and precipitation use separate input color profiles; these are optional arguments for use if your input images do not match the default color categories used by skcc. Custom input color profiles can have more or fewer distinct temperature/precipitation bands than skcc uses by default.
+What colors represent what temperature/precipitation bands, as well as what color represents ocean, can be determined by providing input profiles as additional inputs, which map input RGB colors to temperature/precipitation averages. Temperature and precipitation use separate input color profiles; these are optional arguments for use if your input images do not match the default color categories used by skcc. Custom input color profiles can have more or fewer distinct temperature/precipitation bands than skcc uses by default.
 
 Finally, when run skcc will take this input data and write to the provided output file name an image of identical dimensions to the input images, colored by Köppen-Geiger climate category. An output color profile can optionally be provided to determine what colors will be used as output for what climate categories. The file extension should be included in the output filename. Larger image sizes can take a bit of time to be processed (testing on ~4400x2200-pixel input images took approximately 20 seconds to complete).
 
@@ -25,11 +25,11 @@ The additional options for defining custom input and output color profiles are a
 
 --tempprof="defaultTempProfile"
 
-Defines "defaultTempProfile" as the filename from which to load the temprature input color profile
+Defines "defaultTempProfile" as the filename from which to load the temperature input color profile
 
 --precprof="defaultPrecProfile"
 
-Defines "defaultPrecProfile" as the filename from which to load the precipiation input color profile
+Defines "defaultPrecProfile" as the filename from which to load the precipitation input color profile
 
 --outprof="defaultOutputProfile"
 
@@ -39,8 +39,7 @@ The proper format for the input and output color profile files can be seen in th
 
 NOTES ON KNOWN WEAKNESSES
 
-The input model takes temperature and precipitation only for two extreme months of the year, which is more readily feasible to be hand-generated than twelve individual months. However, this means a precise classification for Cb/Cc and Db/Dc climate categories according to the Köppen-Geiger system cannot be done precisely by the definitions, and the output can be a bit inexact as a result
-reagrding these particular category distinctions. Additionally, this input model means that (for example) regions whose annual precipitations are not well described via extrapolation by the mean of two annual extremes - or where precipitation and temperature extremes do not coincide temporally - can be misrepresented. As skcc.py is intended for classification on fictional worlds this can be less problematic than it is in trying to replicate real-world results based on real-world data, but these are particular notable cases and should be kept in mind.
+The input model takes temperature and precipitation only for two extreme months of the year, which is more readily feasible to be hand-generated than twelve individual months. However, this means a precise classification for Cb/Cc and Db/Dc climate categories according to the Köppen-Geiger system cannot be done precisely by the definitions, and the output can be a bit inexact as a result regarding these particular category distinctions. Additionally, this input model means that (for example) regions whose annual precipitations are not well described via extrapolation by the mean of two annual extremes - or where precipitation and temperature extremes do not coincide temporally - can be misrepresented. As skcc.py is intended for classification on fictional worlds this can be less problematic than it is in trying to replicate real-world results based on real-world data, but these are particular notable cases and should be kept in mind.
 
 ACKNOWLEDGEMENTS
 
