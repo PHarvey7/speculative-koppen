@@ -4,10 +4,10 @@
 # Speculative Köppen-Geiger Climate Classifier
 # (c) 2018 Patrick Harvey (see LICENSE.txt)
 
-import sys, getopt, itertools, re
+import sys, getopt, itertools, re, time
 from PIL import Image
 
-versionNumber = '0.0.2'
+versionNumber = '0.0.3'
 
 kColorTableDefault = {'Af':(11, 36, 250), 'As':(76, 171, 247), 'Aw':(76, 171, 247), 'Am':(21, 123, 251), 
                'Cfa':(199, 253, 92), 'Csa':(255, 253, 56), 'Cwa':(153, 253, 154),
@@ -68,10 +68,10 @@ def optErr():
 
 def outputToFile(filename, img):
     try:
-        img.save(filename, 'PNG')
+        img.save(filename)
     except:
         print('Error: Could not write to file ' + filename)
-    sys.exit(0)
+        sys.exit(0)
 
 # Converts an input pixel color to a temperature value.
 def getTemperatureCategory(tPixel, tempProfile):
@@ -366,6 +366,8 @@ try:
 except getopt.error:
     optErr()
 
+startTime = time.time()
+
 tempFileNameNW = ''
 tempFileNameNS = ''
 precFileNameNW = ''
@@ -433,3 +435,6 @@ if (not outfileName):
     sys.exit(0)
 outputToFile(outfileName, buildClimates(tempFileNameNS, tempFileNameNW, precFileNameNS, precFileNameNW, 
                                         tempProfile, precProfile, outProfile))
+stopTime = time.time()
+timeDiffRounded = format(stopTime - startTime, '.2f')
+print('Output climate map to ' + outfileName + ' (' + timeDiffRounded + 's).')
