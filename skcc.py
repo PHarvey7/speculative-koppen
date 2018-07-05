@@ -149,17 +149,10 @@ def getPrecipitationPattern(tType, tempTuple, precTuple, annualPrecip):
                 return 'w'
             else:
                 return 's'
-    elif (tType == 'C'):
+    elif ((tType == 'C') or (tType == 'D')):
         if (precTuple[1] < (precTuple[0] * 0.1)):
             return 'w'
         elif ((precTuple[0] < (precTuple[1] * 0.33)) and (precTuple[0] < 40)):
-            return 's'
-        else:
-            return 'f'
-    elif (tType == 'D'):
-        if (precTuple[1] < (precTuple[0] * 0.1)):
-            return 'w'
-        elif ((precTuple[0] < (precTuple[1] * 0.33)) and (precTuple[0] < 30)):
             return 's'
         else:
             return 'f'
