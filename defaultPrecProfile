@@ -12,7 +12,11 @@
 # profile for that color should be 150. 
 # As a special case, <Val> can also be the character 'O' (not zero '0'), in which case that denotes an ocean color
 # that will be ignored for climate classification and simply output as the output profile's ocean color. 
-# Aribtrary whitespace can be placed before each delimiter (:), provided it still remains a single line.
+# Additionally, the entire RGB color for a row, e.g. (<R>, <G>, <B>), can be replaced with (Default), including
+# the parentheses. In this case, all colors in the input temperature images that do not match any other
+# color in the profile will be given the Default row's value. This can mean 'default-to-ocean', e.g. the row's <Val>
+# field is 'O', as noted above.   
+# Aribtrary whitespace can be placed around numbers, punctuation, and delimiters (:) provided each row remains a single line.
 
 (Heaviest)  :(135, 0, 180)    :300
             :(130, 60, 200)   :170
