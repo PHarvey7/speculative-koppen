@@ -28,9 +28,14 @@ pColorTableDefault = {(135, 0, 180):300.0, (130, 60, 200):170.0, (105, 70, 200):
                (70, 95, 150):30.0, (55, 85, 100):15.0, (35, 50, 50):7.5, (20, 20, 20):2.5}
 
 class InputProfile:
-    def __init__(self, iTable, oceanC):
+    def __init__(self, iTable, oceanC, default=None):
         self.colorTable = iTable
         self.oceanColor = oceanC
+        self.defaultValue = default
+
+    # Returns true iff the input RGB tuple represents ocean according to this profile.
+    def isOceanColor(pxTuple):
+        return ((pxTuple == self.oceanColor) or ((not (pxTuple in self.colorTable.keys())) and (self.defaultValue == 'O')))
 
 class OutputProfile:
     def __init__(self, cTable):
@@ -78,6 +83,8 @@ def outputToFile(filename, img):
 def getTemperatureCategory(tPixel, tempProfile):
     if (tPixel in tempProfile.colorTable):
         return tempProfile.colorTable[tPixel]
+    elif (not (tempProfile.defaultValue is None)) and (not (tempProfile.defaultValue == 'O')):
+        return tempProfile.defaultValue
     else:
         print('Error: Invalid temperature map color value: ' + str(tPixel))
         sys.exit(0)
@@ -294,27 +301,37 @@ def readInputProfile(fname):
         fp = open(fname, 'r')
         profTable = {}
         oceanColor = defaultOceanColor
+        defaultVal = None
         try:
             for line in fp:
                 if ((line[0] != '#') and (not (line.isspace()))):
-                    rmatch = re.match(r"""[^:]*:\s*\(\s*([0-9]+\s*,\s*[0-9]+\s*,\s*[0-9]+\s*)\)\s*:\s*(-?[0-9.]*O?)""", line)
+                    rmatch = re.match(r"""[^:]*:\s*\(\s*(Default|[0-9]+\s*,\s*[0-9]+\s*,\s*[0-9]+)\s*\)\s*:\s*(-?[0-9.]*O?)""", line)
                     if rmatch:
                         iColor = rmatch.group(1)
-                        rgbVals = iColor.split(',')
-                        rval = int(rgbVals[0].strip())
-                        gval = int(rgbVals[1].strip())
-                        bval = int(rgbVals[2].strip())
-                        if ((rval < 0) or (rval > 255) or (gval < 0) or (gval > 255) or (bval < 0) or (bval > 255)):
-                            print('Error: Invalid RGB color in input profile: ' + str((rval, gval, bval)))
-                            sys.exit(0)
-                        iValue = rmatch.group(2)
-                        if ((rval, gval, bval) in profTable):
-                            print('Warning: Duplicate color in input profile: ' + str((rval, gval, bval)))
-                        if (iValue == 'O'):
-                            oceanColor = (rval, gval, bval)
+                        if (iColor == 'Default'):
+                            iValue = rmatch.group(2)
+                            if (not (defaultVal is None)):
+                                print('Warning: Duplicate default value in input profile: ' + iValue)
+                            if (iValue == 'O'):
+                                defaultVal = 'O'
+                            else:
+                                defaultVal = float(iValue)
                         else:
-                            ival = float(iValue)
-                            profTable[(rval, gval, bval)] = ival
+                            rgbVals = iColor.split(',')
+                            rval = int(rgbVals[0].strip())
+                            gval = int(rgbVals[1].strip())
+                            bval = int(rgbVals[2].strip())
+                            if ((rval < 0) or (rval > 255) or (gval < 0) or (gval > 255) or (bval < 0) or (bval > 255)):
+                                print('Error: Invalid RGB color in input profile: ' + str((rval, gval, bval)))
+                                sys.exit(0)
+                            iValue = rmatch.group(2)
+                            if ((rval, gval, bval) in profTable):
+                                print('Warning: Duplicate color in input profile: ' + str((rval, gval, bval)))
+                            if (iValue == 'O'):
+                                oceanColor = (rval, gval, bval)
+                            else:
+                                ival = float(iValue)
+                                profTable[(rval, gval, bval)] = ival
                     else:
                         print('Error: Invalid line in input profile: ' + line)
                         sys.exit(0)
@@ -323,7 +340,7 @@ def readInputProfile(fname):
     except:
         print('Error: Could not open input profile: ' + fname)
         sys.exit(0)
-    return InputProfile(profTable, oceanColor)
+    return InputProfile(profTable, oceanColor, defaultVal)
 
 # Reads an output profile file and creates an OutputProfile object
 # from it.
