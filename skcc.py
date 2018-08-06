@@ -297,7 +297,7 @@ def readInputProfile(fname):
         try:
             for line in fp:
                 if ((line[0] != '#') and (not (line.isspace()))):
-                    rmatch = re.match(r"""[^:]*:\(([0-9]+,\s*[0-9]+,\s*[0-9]+\s*)\)\s*:\s*(-?[0-9.]*O?)""", line)
+                    rmatch = re.match(r"""[^:]*:\s*\(\s*([0-9]+\s*,\s*[0-9]+\s*,\s*[0-9]+\s*)\)\s*:\s*(-?[0-9.]*O?)""", line)
                     if rmatch:
                         iColor = rmatch.group(1)
                         rgbVals = iColor.split(',')
@@ -334,7 +334,7 @@ def readOutputProfile(fname):
         try:
             for line in fp:
                 if ((line[0] != '#') and (not (line.isspace()))):
-                    rmatch = re.match(r"""\s*([A-Za-z]+)\s*:\(\s*([0-9]+,\s*[0-9]+,\s*[0-9]+)\s*\)""", line)
+                    rmatch = re.match(r"""\s*([A-Za-z]+)\s*:\s*\(\s*([0-9]+\s*,\s*[0-9]+\s*,\s*[0-9]+\s*)\s*\)""", line)
                     if rmatch:
                         oColor = rmatch.group(2)
                         rgbVals = oColor.split(',')
