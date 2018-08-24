@@ -43,6 +43,38 @@ NOTES ON KNOWN WEAKNESSES
 
 The input model takes temperature and precipitation only for two extreme months of the year, which is more readily feasible to be hand-generated than twelve individual months. However, this means a precise classification for Cb/Cc and Db/Dc climate categories according to the Köppen-Geiger system cannot be done precisely by the definitions, and the output can be a bit inexact as a result regarding these particular category distinctions. Additionally, this input model means that (for example) regions whose annual precipitations are not well described via extrapolation by the mean of two annual extremes - or where precipitation and temperature extremes do not coincide temporally - can be misrepresented. As skcc.py is intended for classification on fictional worlds this can be less problematic than it is in trying to replicate real-world results based on real-world data, but these are particular notable cases and should be kept in mind.
 
+TROUBLESHOOTING
+
+In response to error messages:
+
+"ImportError: No module named PIL"
+
+--> A Python error message generated when Pillow (see dependencies section above) is not installed or could not be found. Make sure the script is being run with Python 3 as well as opposed to a 2.x or other version.
+
+"Error: One or more required input data files were not specified."
+
+--> Indicates that one or more of the two temperature input files and the two precipitation input files were not specified on the command line. The script requires that all four of these inputs are provided in order to function.
+
+"Error: No output filename specified."
+
+--> Indicates that no filename was specified on the command line to output the resulting climate map to. Specify one using the --outfile= flag.
+
+"Error: Invalid line in output profile: <text of line>"
+
+--> Indicates that the shown line in a custom output profile was invalid. Check the defaultOutputProfile for an explanation of the format that output profiles should take.
+
+"Error: Invalid line in input profile: <text of line>"
+
+--> Indicates that the shown line in a custom input profile was invalid. Check the defaultTempProfile and defaultPrecProfile files for explanations of the input profile format.
+
+"Error: Could not open <input|output> profile: <filename>"
+
+--> Indicates that the input or output profile shown could not be opened. Check to make sure the filepath that was provided on the command line is correct.
+
+"Error: Invalid <temperature|precipitation> map color value: (<R>,<G>,<B>)"
+
+--> Indicates that an input temperature or precipitation map contained pixels of a color that does not match any color in the input temperature or precipitation color profile in use. If no --tempprof or --precprof flags were specified, the script will be using the same profile as that indicated in defaultTempProfile and defaultPrecProfile respectively. If custom profiles were provided, the script will be using these. This error can commonly be caused by having used antialiased drawing tools in creating the input maps - all the colors used must be pixel-exact, so avoid 'paintbrush' type tools and the like for constructing the input maps. If custom profiles were used, also check to make sure that these profiles specify the same RGB colors used in the input maps of the corresponding type.
+
 ACKNOWLEDGEMENTS
 
 The general classification process used by skcc.py is drawn from work by users Azélor and Charerg of the Cartographer's Guild (www.cartographersguild.com).
