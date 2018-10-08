@@ -7,7 +7,7 @@
 import sys, getopt, itertools, re, time
 from PIL import Image
 
-versionNumber = '0.0.3'
+versionNumber = '0.0.4'
 
 kColorTableDefault = {'Af':(11, 36, 250), 'As':(76, 171, 247), 'Aw':(76, 171, 247), 'Am':(21, 123, 251), 
                'Cfa':(199, 253, 92), 'Csa':(255, 253, 56), 'Cwa':(153, 253, 154),
@@ -256,7 +256,7 @@ def makeRGBConversion(img1, img2, img3, img4):
             sys.exit(0)
         else:
             bandIds.append((bandList.index('R'), bandList.index('G'), bandList.index('B')))
-    if (bandList[0] == ('R', 'G', 'B')) and (bandList[1] == ('R', 'G', 'B')) and (bandIds[2] == ('R', 'G', 'B')) and (bandIds[3] == ('R', 'G', 'B')):
+    if (bandList[0] == ('R', 'G', 'B')) and (bandList[1] == ('R', 'G', 'B')) and (bandList[2] == ('R', 'G', 'B')) and (bandList[3] == ('R', 'G', 'B')):
         # Special case to improve performance if input is all RGB images with no channels
         def retRGB(pxTuple):
             return pxTuple
