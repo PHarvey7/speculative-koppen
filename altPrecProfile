@@ -1,0 +1,13 @@
+# This is the precipitation input color profile used to match Azélor's tutorial.
+# Any color that is not Ocean or one of the 0 or 2-5 categories defaults to the 1 category,
+# as in the original turotial.
+# To use this profile for reading in precipitation data instead of the default, run
+# skcc with the command-line flag --precprof= set to the path to this file.
+
+(Heaviest)  :(220, 221, 247)  :300
+            :(198, 199, 236)  :150
+            :(161, 162, 210)  :75
+            :(100, 101, 148)  :37.5
+            :(Default)        :17.5
+(Driest)    :(234, 22, 140)   :5
+Ocean       :(107, 165, 210)  :O
