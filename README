@@ -17,7 +17,7 @@ Finally, when run skcc will take this input data and write to the provided outpu
 
 Invoking skcc.py should generally appear as follows:
 
-python ./skcc.py --tempns="JulTemp.png" --tempnw="JanTemp.png" --precns="JulPrecip.png" --precnw="JanPrecip.png" --outfile="output.png"
+python skcc.py --tempns="JulTemp.png" --tempnw="JanTemp.png" --precns="JulPrecip.png" --precnw="JanPrecip.png" --outfile="output.png"
 
 In particular, note that --tempns corresponds to the northern-hemisphere summer temperature, and --precns the north-hemisphere summer precipitation. Likewise, --tempnw is for the northern-hemisphere winter temperature and --precnw the northern-hemisphere winter precipitation. The filenames in the example should be replaced with actual filepaths to the input images. All of the arguments shown above are required to run the script. The format of the output image depends on the extension given in the outfile name.
 
@@ -38,6 +38,8 @@ Defines "defaultOutputProfile" as the filename from which to load the output col
 The proper format for the input and output color profile files can be seen in the included default files, which also contain explanations on how to construct custom versions of these. These files also describe the defaults used by skcc.py if no custom color profile is specified for any of the input/output categories.
 
 The final optional command-line flag is --quiet. This disables the text output on completion ('Output climate map to...'). Note that error messages are not disabled by this flag.
+
+Note that the invocation of Python in the command line can depend on your installation. Defaults for different versions of python have used 'python', 'py', etc.. Run Python on the command line using whatever identifier is correct to your installation.
 
 NOTES ON KNOWN WEAKNESSES
 

@@ -274,7 +274,7 @@ def makeRGBConversion(img1, img2, img3, img4):
 # the input temperature and precipitation maps interpreted via the input temperature
 # and precipitation color profiles.
 def buildClimates(t1name, t2name, p1name, p2name, tempProfile, precProfile, outProfile):
-#    try:
+    try:
         temperature1 = Image.open(t1name)
         temperature2 = Image.open(t2name)
         precipitation1 = Image.open(p1name)
@@ -289,9 +289,9 @@ def buildClimates(t1name, t2name, p1name, p2name, tempProfile, precProfile, outP
                   for idx, pxTuple in enumerate(rawData)]
         climateImg = Image.new('RGB', (temperature1.size[0], temperature1.size[1]))
         climateImg.putdata(newPix)
-#    except:
-#        print('Error: General error occurred (check input data filenames and correctness)')
-#        sys.exit(0)
+    except:
+        print('Error: General error occurred (check input data filenames and correctness)')
+        sys.exit(0)
         return climateImg
 
 # Reads an input profile specification and returns an InputProfile object
@@ -376,88 +376,85 @@ def readOutputProfile(fname):
     return OutputProfile(profTable)
 
 # Begin script
+if __name__ == '__main__':
+    try:
+        options, xarguments = getopt.getopt(sys.argv[1:], 'hvso:t:u:p:q:v:r:k:', ['help', 'version', 'quiet', 'outfile=', 'tempnw=', 'tempns=', 'precnw=', 'precns=', 'tempprof=', 'precprof=', 'outprof='])
+    except getopt.error:
+        optErr()
 
-try:
-    options, xarguments = getopt.getopt(sys.argv[1:], 'hvso:t:u:p:q:v:r:k:', ['help', 'version', 'quiet', 'outfile=', 'tempnw=', 
-                                                                       'tempns=', 'precnw=', 'precns=', 'tempprof=',
-                                                                           'precprof=', 'outprof='])
-except getopt.error:
-    optErr()
+    startTime = time.time()
 
-startTime = time.time()
+    tempFileNameNW = ''
+    tempFileNameNS = ''
+    precFileNameNW = ''
+    precFileNameNS = ''
+    outfileName = ''
 
-tempFileNameNW = ''
-tempFileNameNS = ''
-precFileNameNW = ''
-precFileNameNS = ''
-outfileName = ''
+    # Set up default color profiles
+    tempProfile = InputProfile(tColorTableDefault, defaultOceanColor)
+    precProfile = InputProfile(pColorTableDefault, defaultOceanColor)
+    outProfile = OutputProfile(kColorTableDefault)
 
-# Set up default color profiles
-tempProfile = InputProfile(tColorTableDefault, defaultOceanColor)
-precProfile = InputProfile(pColorTableDefault, defaultOceanColor)
-outProfile = OutputProfile(kColorTableDefault)
+    quiet = False
 
-quiet = False
-
-#Parse options
-for a in options[:]:
-    if a[0] == '-h' or a[0] == '--help':
-        usage()
-for a in options[:]:
-    if a[0] == '-v' or a[0] == '--version':
-        version()
-for a in options[:]:
-    if a[0] == '-o' or a[0] == '--outfile':
-        if a[1] == '':
-            optErr()
-        else:
-            outfileName = a[1]
-    if a[0] == '-t' or a[0] == '--tempnw':
-        if a[1] == '':
-            optErr()
-        else:
-            tempFileNameNW = a[1]
-    if a[0] == '-u' or a[0] == '--tempns':
-        if a[1] == '':
-            optErr()
-        else:
-            tempFileNameNS = a[1]
-    if a[0] == '-p' or a[0] == '--precnw':
-        if a[1] == '':
-            optErr()
-        else:
-            precFileNameNW = a[1]
-    if a[0] == '-q' or a[0] == '--precns':
-        if a[1] == '':
-            optErr()
-        else:
-            precFileNameNS = a[1]
-    if a[0] == '-v' or a[0] == '--tempprof':
-        if a[1] == '':
-            optErr()
-        else:
-            tempProfile = readInputProfile(a[1])
-    if a[0] == '-r' or a[0] == '--precprof':
-        if a[1] == '':
-            optErr()
-        else:
-            precProfile = readInputProfile(a[1])
-    if a[0] == '-k' or a[0] == '--outprof':
-        if a[1] == '':
-            optErr()
-        else:
-            outProfile = readOutputProfile(a[1])
-    if a[0] == '-s' or a[0] == '--quiet':
-        quiet = True
-if ((not tempFileNameNS) or (not tempFileNameNW) or (not precFileNameNS) or (not precFileNameNW)):
-    print('Error: One or more required input data files were not specified.')
-    sys.exit(0)
-if (not outfileName):
-    print('Error: No output filename specified.')
-    sys.exit(0)
-outputToFile(outfileName, buildClimates(tempFileNameNS, tempFileNameNW, precFileNameNS, precFileNameNW, 
-                                        tempProfile, precProfile, outProfile))
-if not quiet:
-    stopTime = time.time()
-    timeDiffRounded = format(stopTime - startTime, '.2f')
-    print('Output climate map to ' + outfileName + ' (' + timeDiffRounded + 's).')
+    # Parse options
+    for a in options[:]:
+        if a[0] == '-h' or a[0] == '--help':
+            usage()
+    for a in options[:]:
+        if a[0] == '-v' or a[0] == '--version':
+            version()
+    for a in options[:]:
+        if a[0] == '-o' or a[0] == '--outfile':
+            if a[1] == '':
+                optErr()
+            else:
+                outfileName = a[1]
+        if a[0] == '-t' or a[0] == '--tempnw':
+            if a[1] == '':
+                optErr()
+            else:
+                tempFileNameNW = a[1]
+        if a[0] == '-u' or a[0] == '--tempns':
+            if a[1] == '':
+                optErr()
+            else:
+                tempFileNameNS = a[1]
+        if a[0] == '-p' or a[0] == '--precnw':
+            if a[1] == '':
+                optErr()
+            else:
+                precFileNameNW = a[1]
+        if a[0] == '-q' or a[0] == '--precns':
+            if a[1] == '':
+                optErr()
+            else:
+                precFileNameNS = a[1]
+        if a[0] == '-v' or a[0] == '--tempprof':
+            if a[1] == '':
+                optErr()
+            else:
+                tempProfile = readInputProfile(a[1])
+        if a[0] == '-r' or a[0] == '--precprof':
+            if a[1] == '':
+                optErr()
+            else:
+                precProfile = readInputProfile(a[1])
+        if a[0] == '-k' or a[0] == '--outprof':
+            if a[1] == '':
+                optErr()
+            else:
+                outProfile = readOutputProfile(a[1])
+        if a[0] == '-s' or a[0] == '--quiet':
+            quiet = True
+    if ((not tempFileNameNS) or (not tempFileNameNW) or (not precFileNameNS) or (not precFileNameNW)):
+        print('Error: One or more required input data files were not specified.')
+        sys.exit(0)
+    if (not outfileName):
+        print('Error: No output filename specified.')
+        sys.exit(0)
+    outputToFile(outfileName, buildClimates(tempFileNameNS, tempFileNameNW, precFileNameNS, precFileNameNW, tempProfile, precProfile, outProfile))
+    if not quiet:
+        stopTime = time.time()
+        timeDiffRounded = format(stopTime - startTime, '.2f')
+        print('Output climate map to ' + outfileName + ' (' + timeDiffRounded + 's).')
