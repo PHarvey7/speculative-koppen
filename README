@@ -17,7 +17,7 @@ Finally, when run skcc will take this input data and write to the provided outpu
 
 Invoking skcc.py should generally appear as follows:
 
-python skcc.py --tempns="JulTemp.png" --tempnw="JanTemp.png" --precns="JulPrecip.png" --precnw="JanPrecip.png" --outfile="output.png"
+python ./skcc.py --tempns="JulTemp.png" --tempnw="JanTemp.png" --precns="JulPrecip.png" --precnw="JanPrecip.png" --outfile="output.png"
 
 In particular, note that --tempns corresponds to the northern-hemisphere summer temperature, and --precns the north-hemisphere summer precipitation. Likewise, --tempnw is for the northern-hemisphere winter temperature and --precnw the northern-hemisphere winter precipitation. The filenames in the example should be replaced with actual filepaths to the input images. All of the arguments shown above are required to run the script. The format of the output image depends on the extension given in the outfile name.
 
