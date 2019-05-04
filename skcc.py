@@ -51,17 +51,17 @@ def usage():
     -h, --help    : Displays this message
     -v, --version : Displays the current version of skcc.py
     -s, --quiet   : Silences successful completion output
-    -o:<fname>, --outfile=<fname>  : Outputs the resulting image to the filepath '<fname>', 
+    -o<fname>, --outfile=<fname>  : Outputs the resulting image to the filepath '<fname>', 
                                     requires two temperature and two precipitation inputs. Required.
-    -t:<fname>, --tempnw=<fname>   : Takes temperature input data for northern-hemisphere winter 
+    -t<fname>, --tempnw=<fname>   : Takes temperature input data for northern-hemisphere winter 
                                     from the image '<fname>'. Required.
-    -u:<fname>, --tempns=<fname>   : Takes temperature input data for northern-hemisphere summer
+    -u<fname>, --tempns=<fname>   : Takes temperature input data for northern-hemisphere summer
                                     from the image '<fname>'. Required.
-    -p:<fname>, --precnw=<fname>   : Take precipitation input for northern-hemisphere winter from the image '<fname>'. Required.
-    -q:<fname>, --precns=<fname>   : Take precipitation input for northern-hemisphere summer from the image '<fname>'. Required.
-    -v:<fname>, --tempprof=<fname> : Take the input temperature color profile from the filename '<fname>'. 
-    -r:<fname>, --precprof=<fname> : Take the input precipitation color profile from the filename '<fname>'.
-    -k:<fname>, --outprof=<fname>  : Take the output color profile from the filename '<fname>'. ''')
+    -p<fname>, --precnw=<fname>   : Take precipitation input for northern-hemisphere winter from the image '<fname>'. Required.
+    -q<fname>, --precns=<fname>   : Take precipitation input for northern-hemisphere summer from the image '<fname>'. Required.
+    -v<fname>, --tempprof=<fname> : Take the input temperature color profile from the filename '<fname>'. 
+    -r<fname>, --precprof=<fname> : Take the input precipitation color profile from the filename '<fname>'.
+    -k<fname>, --outprof=<fname>  : Take the output color profile from the filename '<fname>'. ''')
     sys.exit(0)
 
 def version():
@@ -292,7 +292,7 @@ def buildClimates(t1name, t2name, p1name, p2name, tempProfile, precProfile, outP
     except:
         print('Error: General error occurred (check input data filenames and correctness)')
         sys.exit(0)
-        return climateImg
+    return climateImg
 
 # Reads an input profile specification and returns an InputProfile object
 # from it.
