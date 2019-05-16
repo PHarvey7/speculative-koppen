@@ -9,7 +9,9 @@ import sys, os, getopt
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from imgtest import ImgTest, compareImages, deleteFiles, runTests
-from skcc import outputToFile, readInputProfile, readOutputProfile, buildClimates, tColorTableDefault, defaultOceanColor, pColorTableDefault, kColorTableDefault, InputProfile, OutputProfile
+from skcc import outputToFile, buildClimates, tColorTableDefault, defaultOceanColor, pColorTableDefault, kColorTableDefault, readAndValidateOutputProfile, defaultUnknownColor
+from ioHandling.inputHandler import readInputProfile, InputProfile
+from ioHandling.outputHandler import OutputProfile
 
 def getTestDirPath(fname):
     return os.path.abspath(os.path.join(os.path.dirname(__file__), fname))
@@ -30,9 +32,9 @@ def getProfiaInputsPrecipOcean():
     return getTestDirPath('ProfiaTempJul.png'), getTestDirPath('ProfiaTempJan.png'), getTestDirPath('ProfiaPrecJul.png'), getTestDirPath('ProfiaPrecJanExtraOcean.png')
 
 def test1Fn():
-    tempProf = InputProfile(tColorTableDefault, defaultOceanColor)
-    precProf = InputProfile(pColorTableDefault, defaultOceanColor)
-    outProf = OutputProfile(kColorTableDefault)
+    tempProf = InputProfile(tColorTableDefault, [defaultOceanColor])
+    precProf = InputProfile(pColorTableDefault, [defaultOceanColor])
+    outProf = OutputProfile(kColorTableDefault, defaultOceanColor, defaultUnknownColor)
 
     outputPath = getTestDirPath('test1-out.png')
     tempnsPath, tempnwPath, precnsPath, precnwPath = getProfiaInputs()
@@ -49,9 +51,9 @@ def test1Clean():
     deleteFiles(dPaths)
 
 def test2Fn():
-    tempProf = InputProfile(tColorTableDefault, defaultOceanColor)
-    precProf = InputProfile(pColorTableDefault, defaultOceanColor)
-    outProf = readOutputProfile(getParentDirPath('altOutputProfile'))
+    tempProf = InputProfile(tColorTableDefault, [defaultOceanColor])
+    precProf = InputProfile(pColorTableDefault, [defaultOceanColor])
+    outProf = readAndValidateOutputProfile(getParentDirPath('altOutputProfile'))
 
     outputPath = getTestDirPath('test2-out.png')
     tempnsPath, tempnwPath, precnsPath, precnwPath = getProfiaInputs()
@@ -68,9 +70,9 @@ def test2Clean():
     deleteFiles(dPaths)
 
 def test3Fn():
-    tempProf = InputProfile(tColorTableDefault, defaultOceanColor)
-    precProf = InputProfile(pColorTableDefault, defaultOceanColor)
-    outProf = readOutputProfile(getParentDirPath('defaultOutputProfile'))
+    tempProf = InputProfile(tColorTableDefault, [defaultOceanColor])
+    precProf = InputProfile(pColorTableDefault, [defaultOceanColor])
+    outProf = readAndValidateOutputProfile(getParentDirPath('defaultOutputProfile'))
 
     outputPath = getTestDirPath('test3-out.png')
     tempnsPath, tempnwPath, precnsPath, precnwPath = getBoxesInputs()
@@ -87,9 +89,9 @@ def test3Clean():
     deleteFiles(dPaths)
 
 def test4Fn():
-    tempProf = InputProfile(tColorTableDefault, defaultOceanColor)
-    precProf = InputProfile(pColorTableDefault, defaultOceanColor)
-    outProf = readOutputProfile(getParentDirPath('defaultOutputProfile'))
+    tempProf = InputProfile(tColorTableDefault, [defaultOceanColor])
+    precProf = InputProfile(pColorTableDefault, [defaultOceanColor])
+    outProf = readAndValidateOutputProfile(getParentDirPath('defaultOutputProfile'))
 
     outputPath = getTestDirPath('test4-out.png')
     tempnsPath, tempnwPath, precnsPath, precnwPath = getBoxesInputsSwappedPrecipitations()
@@ -106,9 +108,9 @@ def test4Clean():
     deleteFiles(dPaths)
 
 def test5Fn():
-    tempProf = InputProfile(tColorTableDefault, defaultOceanColor)
-    precProf = InputProfile(pColorTableDefault, defaultOceanColor)
-    outProf = OutputProfile(kColorTableDefault)
+    tempProf = InputProfile(tColorTableDefault, [defaultOceanColor])
+    precProf = InputProfile(pColorTableDefault, [defaultOceanColor])
+    outProf = OutputProfile(kColorTableDefault, defaultOceanColor, defaultUnknownColor)
 
     outputPath = getTestDirPath('test5-out.png')
     tempnsPath, tempnwPath, precnsPath, precnwPath = getProfiaInputsPrecipOcean()

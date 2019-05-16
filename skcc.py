@@ -6,8 +6,10 @@
 
 import sys, getopt, itertools, re, time
 from PIL import Image
+from ioHandling.inputHandler import readInputProfile, InputProfile
+from ioHandling.outputHandler import readOutputProfile, OutputProfile
 
-versionNumber = '0.0.5'
+versionNumber = '0.0.6'
 
 kColorTableDefault = {'Af':(11, 36, 250), 'As':(76, 171, 247), 'Aw':(76, 171, 247), 'Am':(21, 123, 251), 
                'Cfa':(199, 253, 92), 'Csa':(255, 253, 56), 'Cwa':(153, 253, 154),
@@ -27,21 +29,9 @@ tColorTableDefault = {(160, 0, 65):38, (210, 60, 80):31, (245, 110, 65):25, (250
 pColorTableDefault = {(135, 0, 180):300.0, (130, 60, 200):170.0, (105, 70, 200):105.0, (60, 60, 180):55.0, 
                (70, 95, 150):30.0, (55, 85, 100):15.0, (35, 50, 50):7.5, (20, 20, 20):2.5}
 
-class InputProfile:
-    def __init__(self, iTable, oceanC, default=None):
-        self.colorTable = iTable
-        self.oceanColor = oceanC
-        self.defaultValue = default
-
-    # Returns true iff the input RGB tuple represents ocean according to this profile.
-    def isOceanColor(pxTuple):
-        return ((pxTuple == self.oceanColor) or ((not (pxTuple in self.colorTable.keys())) and (self.defaultValue == 'O')))
-
-class OutputProfile:
-    def __init__(self, cTable):
-        self.colorTable = cTable
-
 defaultOceanColor = (107, 165, 210)
+
+defaultUnknownColor = (0, 0, 0)
 
 def usage():
     print('''skcc.py : Speculative Köppen-Geiger Climate Classifier
@@ -81,23 +71,11 @@ def outputToFile(filename, img):
 
 # Converts an input pixel color to a temperature value.
 def getTemperatureCategory(tPixel, tempProfile):
-    if (tPixel in tempProfile.colorTable):
-        return tempProfile.colorTable[tPixel]
-    elif (not (tempProfile.defaultValue is None)) and (not (tempProfile.defaultValue == 'O')):
-        return tempProfile.defaultValue
-    else:
-        print('Error: Invalid temperature map color value: ' + str(tPixel))
-        sys.exit(0)
+    return tempProfile.getValue(tPixel)
 
 # Converts an input pixel color to a precipitation value.
 def getPrecipCategory(pPixel, precProfile):
-    if (pPixel in precProfile.colorTable):
-        return precProfile.colorTable[pPixel]
-    elif (not (precProfile.defaultValue is None)) and (not (precProfile.defaultValue == 'O')):
-        return precProfile.defaultValue
-    else:
-        print('Error: Invalid precipitation map color value: ' + str(pPixel))
-        sys.exit(0)
+    return precProfile.getValue(pPixel)
 
 # Returns (summer temp, winter temp), (summer precip category, winter precip category)
 # tuples from raw pixel data 
@@ -208,9 +186,9 @@ def getSeasonalPattern(tType, tempTuple):
 def getClimateColor(pxTuple, tempProfile, precProfile, outProfile, isNorthernHemis):
     #pxTuple contains a tuple of four pixels, for (temp1, temp2, precip1, precip2).
     #If either temperature is the ocean color we treat this pixel as ocean and ignore it.
-    if ((pxTuple[0] == tempProfile.oceanColor) or (pxTuple[1] == tempProfile.oceanColor) or
-        (pxTuple[2] == precProfile.oceanColor) or (pxTuple[3] == precProfile.oceanColor)):
-        return tempProfile.oceanColor
+    if (tempProfile.isIgnored(pxTuple[0]) or pxTuple[1] == tempProfile.isIgnored(pxTuple[1]) or
+        pxTuple[2] == precProfile.isIgnored(pxTuple[2]) or precProfile.isIgnored(pxTuple[3])):
+        return outProfile.ignoredColor
     else:
         tempTuple, precTuple = convertPixelData(pxTuple, tempProfile, precProfile, isNorthernHemis)
         #Temptuple is (avg. for summer, avg. for winter)
@@ -297,86 +275,22 @@ def buildClimates(t1name, t2name, p1name, p2name, tempProfile, precProfile, outP
         sys.exit(0)
     return climateImg
 
-# Reads an input profile specification and returns an InputProfile object
-# from it.
-def readInputProfile(fname):
-    try:
-        fp = open(fname, 'r')
-        profTable = {}
-        oceanColor = defaultOceanColor
-        defaultVal = None
-        try:
-            for line in fp:
-                if ((line[0] != '#') and (not (line.isspace()))):
-                    rmatch = re.match(r"""[^:]*:\s*\(\s*(Default|[0-9]+\s*,\s*[0-9]+\s*,\s*[0-9]+)\s*\)\s*:\s*(-?[0-9.]*O?)""", line)
-                    if rmatch:
-                        iColor = rmatch.group(1)
-                        if (iColor == 'Default'):
-                            iValue = rmatch.group(2)
-                            if (not (defaultVal is None)):
-                                print('Warning: Duplicate default value in input profile: ' + iValue)
-                            if (iValue == 'O'):
-                                defaultVal = 'O'
-                            else:
-                                defaultVal = float(iValue)
-                        else:
-                            rgbVals = iColor.split(',')
-                            rval = int(rgbVals[0].strip())
-                            gval = int(rgbVals[1].strip())
-                            bval = int(rgbVals[2].strip())
-                            if ((rval < 0) or (rval > 255) or (gval < 0) or (gval > 255) or (bval < 0) or (bval > 255)):
-                                print('Error: Invalid RGB color in input profile: ' + str((rval, gval, bval)))
-                                sys.exit(0)
-                            iValue = rmatch.group(2)
-                            if ((rval, gval, bval) in profTable):
-                                print('Warning: Duplicate color in input profile: ' + str((rval, gval, bval)))
-                            if (iValue == 'O'):
-                                oceanColor = (rval, gval, bval)
-                            else:
-                                ival = float(iValue)
-                                profTable[(rval, gval, bval)] = ival
-                    else:
-                        print('Error: Invalid line in input profile: ' + line)
-                        sys.exit(0)
-        finally:
-            fp.close()
-    except:
-        print('Error: Could not open input profile: ' + fname)
-        sys.exit(0)
-    return InputProfile(profTable, oceanColor, defaultVal)
-
-# Reads an output profile file and creates an OutputProfile object
-# from it.
-def readOutputProfile(fname):
-    try:
-        fp = open(fname, 'r')
-        profTable = {}
-        try:
-            for line in fp:
-                if ((line[0] != '#') and (not (line.isspace()))):
-                    rmatch = re.match(r"""\s*([A-Za-z]+)\s*:\s*\(\s*([0-9]+\s*,\s*[0-9]+\s*,\s*[0-9]+\s*)\s*\)""", line)
-                    if rmatch:
-                        oColor = rmatch.group(2)
-                        rgbVals = oColor.split(',')
-                        rval = int(rgbVals[0].strip())
-                        gval = int(rgbVals[1].strip())
-                        bval = int(rgbVals[2].strip())
-                        kClass = rmatch.group(1)
-                        if (not ((kClass in kColorTableDefault) or (kClass == 'Ocean'))):
-                            print('Error: Invalid Köppen-Geiger class in output profile: ' + kClass)
-                            sys.exit(0)
-                        if (kClass in profTable):
-                            print('Warning: Duplicate entries for Köppen-Geiger class ' + kClass + ' in output profile')
-                        profTable[kClass] = (rval, gval, bval)
-                    else:
-                        print('Error: Invalid line in output profile: ' + line)
-                        sys.exit(0)
-        finally:
-            fp.close()
-    except:
-        print('Error: Could not open output profile: ' + fname)
-        sys.exit(0)
-    return OutputProfile(profTable)
+# Reads in an output profile and checks that all its keys are valid Koppen classes.
+# Also removes the 'Ocean' color from the color table and makes it the ignored color
+# if one wasn't specified (backwards compatability).
+def readAndValidateOutputProfile(fname):
+   profile = readOutputProfile(fname)
+   
+   for climate in profile.colorTable:
+       if not (climate == 'Ocean'):
+           if (not (climate in kColorTableDefault)):
+               print('Error: Invalid Köppen-Geiger class in output profile: ' + climate)
+       else:
+           if profile.ignoredColor != defaultOceanColor:
+               profile.ignoredColor = profile.colorTable[climate]
+   if ('Ocean' in profile.colorTable):
+       profile.colorTable.pop(climate, None)
+   return profile
 
 # Begin script
 if __name__ == '__main__':
@@ -394,9 +308,9 @@ if __name__ == '__main__':
     outfileName = ''
 
     # Set up default color profiles
-    tempProfile = InputProfile(tColorTableDefault, defaultOceanColor)
-    precProfile = InputProfile(pColorTableDefault, defaultOceanColor)
-    outProfile = OutputProfile(kColorTableDefault)
+    tempProfile = InputProfile(tColorTableDefault, [defaultOceanColor])
+    precProfile = InputProfile(pColorTableDefault, [defaultOceanColor])
+    outProfile = OutputProfile(kColorTableDefault, defaultOceanColor, defaultUnknownColor)
 
     quiet = False
 
@@ -447,7 +361,7 @@ if __name__ == '__main__':
             if a[1] == '':
                 optErr()
             else:
-                outProfile = readOutputProfile(a[1])
+                outProfile = readAndValidateOutputProfile(a[1])
         if a[0] == '-s' or a[0] == '--quiet':
             quiet = True
     if ((not tempFileNameNS) or (not tempFileNameNW) or (not precFileNameNS) or (not precFileNameNW)):
