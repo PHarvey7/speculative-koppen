@@ -26,6 +26,9 @@ def getBoxesInputs():
 def getBoxesInputsSwappedPrecipitations():
     return getTestDirPath('BoxesTempJul.png'), getTestDirPath('BoxesTempJan.png'), getTestDirPath('BoxesPrecJan.png'), getTestDirPath('BoxesPrecJul.png')
 
+def getProfiaInputsPrecipOcean():
+    return getTestDirPath('ProfiaTempJul.png'), getTestDirPath('ProfiaTempJan.png'), getTestDirPath('ProfiaPrecJul.png'), getTestDirPath('ProfiaPrecJanExtraOcean.png')
+
 def test1Fn():
     tempProf = InputProfile(tColorTableDefault, defaultOceanColor)
     precProf = InputProfile(pColorTableDefault, defaultOceanColor)
@@ -102,12 +105,32 @@ def test4Clean():
     dPaths = [outputPath]
     deleteFiles(dPaths)
 
+def test5Fn():
+    tempProf = InputProfile(tColorTableDefault, defaultOceanColor)
+    precProf = InputProfile(pColorTableDefault, defaultOceanColor)
+    outProf = OutputProfile(kColorTableDefault)
+
+    outputPath = getTestDirPath('test5-out.png')
+    tempnsPath, tempnwPath, precnsPath, precnwPath = getProfiaInputsPrecipOcean()
+
+    comparePath = getTestDirPath('ProfiaOutputPrecipOcean.png')
+
+    outputToFile(outputPath, buildClimates(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf))
+
+    return compareImages(outputPath, comparePath)
+
+def test5Clean():
+    outputPath = getTestDirPath('test5-out.png')
+    dPaths = [outputPath]
+    deleteFiles(dPaths)
+
 def runAll(doCleanup):
     tests = []
     tests.append(ImgTest('All default profiles - Profia test', test1Fn, test1Clean))
     tests.append(ImgTest('Alternate output profile - Profia test', test2Fn, test2Clean))
     tests.append(ImgTest('All default profiles - Boxes test', test3Fn, test3Clean))
     tests.append(ImgTest('All default profiles - Boxes test (swapped summer/winter precipitation)', test4Fn, test4Clean))
+    tests.append(ImgTest('Test for successful output when precipitation maps have ocean where temperature maps have land', test5Fn, test5Clean))
     runTests(tests, doCleanup)
 
 if __name__ == '__main__':

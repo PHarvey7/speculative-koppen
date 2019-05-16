@@ -7,7 +7,7 @@
 import sys, getopt, itertools, re, time
 from PIL import Image
 
-versionNumber = '0.0.4'
+versionNumber = '0.0.5'
 
 kColorTableDefault = {'Af':(11, 36, 250), 'As':(76, 171, 247), 'Aw':(76, 171, 247), 'Am':(21, 123, 251), 
                'Cfa':(199, 253, 92), 'Csa':(255, 253, 56), 'Cwa':(153, 253, 154),
@@ -93,6 +93,8 @@ def getTemperatureCategory(tPixel, tempProfile):
 def getPrecipCategory(pPixel, precProfile):
     if (pPixel in precProfile.colorTable):
         return precProfile.colorTable[pPixel]
+    elif (not (precProfile.defaultValue is None)) and (not (precProfile.defaultValue == 'O')):
+        return precProfile.defaultValue
     else:
         print('Error: Invalid precipitation map color value: ' + str(pPixel))
         sys.exit(0)
@@ -206,7 +208,8 @@ def getSeasonalPattern(tType, tempTuple):
 def getClimateColor(pxTuple, tempProfile, precProfile, outProfile, isNorthernHemis):
     #pxTuple contains a tuple of four pixels, for (temp1, temp2, precip1, precip2).
     #If either temperature is the ocean color we treat this pixel as ocean and ignore it.
-    if ((pxTuple[0] == tempProfile.oceanColor) or (pxTuple[1] == tempProfile.oceanColor)):
+    if ((pxTuple[0] == tempProfile.oceanColor) or (pxTuple[1] == tempProfile.oceanColor) or
+        (pxTuple[2] == precProfile.oceanColor) or (pxTuple[3] == precProfile.oceanColor)):
         return tempProfile.oceanColor
     else:
         tempTuple, precTuple = convertPixelData(pxTuple, tempProfile, precProfile, isNorthernHemis)
