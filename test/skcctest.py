@@ -12,6 +12,7 @@ from imgtest import ImgTest, compareImages, deleteFiles, runTests
 from skcc import outputToFile, buildClimates, tColorTableDefault, defaultOceanColor, pColorTableDefault, kColorTableDefault, readAndValidateOutputProfile, defaultUnknownColor
 from ioHandling.inputHandler import readInputProfile, InputProfile
 from ioHandling.outputHandler import OutputProfile
+from utils.errors import SKCCError
 
 def getTestDirPath(fname):
     return os.path.abspath(os.path.join(os.path.dirname(__file__), fname))
@@ -30,6 +31,9 @@ def getBoxesInputsSwappedPrecipitations():
 
 def getProfiaInputsPrecipOcean():
     return getTestDirPath('ProfiaTempJul.png'), getTestDirPath('ProfiaTempJan.png'), getTestDirPath('ProfiaPrecJul.png'), getTestDirPath('ProfiaPrecJanExtraOcean.png')
+
+def getProfiaInputsBadPixel():
+    return getTestDirPath('ProfiaTempJul.png'), getTestDirPath('ProfiaTempJan.png'), getTestDirPath('ProfiaPrecJulBadPixel.png'), getTestDirPath('ProfiaPrecJan.png')
 
 def test1Fn():
     tempProf = InputProfile(tColorTableDefault, [defaultOceanColor])
@@ -126,6 +130,29 @@ def test5Clean():
     dPaths = [outputPath]
     deleteFiles(dPaths)
 
+def test6Fn():
+    tempProf = InputProfile(tColorTableDefault, [defaultOceanColor])
+    precProf = InputProfile(pColorTableDefault, [defaultOceanColor])
+    outProf = OutputProfile(kColorTableDefault, defaultOceanColor, defaultUnknownColor)
+
+    outputPath = getTestDirPath('test6-out.png')
+    tempnsPath, tempnwPath, precnsPath, precnwPath = getProfiaInputsBadPixel()
+
+    correctError = False
+    try:
+        buildClimates(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf)
+    except SKCCError as e:
+        if (str(e) == 'Invalid color in input data (did not match input profile): (255, 0, 0)'):
+            correctError = True
+        else:
+            raise
+    return correctError
+
+def test6Clean():
+    outputPath = getTestDirPath('test6-out.png')
+    dPaths = [outputPath]
+    deleteFiles(dPaths)
+
 def runAll(doCleanup):
     tests = []
     tests.append(ImgTest('All default profiles - Profia test', test1Fn, test1Clean))
@@ -133,6 +160,7 @@ def runAll(doCleanup):
     tests.append(ImgTest('All default profiles - Boxes test', test3Fn, test3Clean))
     tests.append(ImgTest('All default profiles - Boxes test (swapped summer/winter precipitation)', test4Fn, test4Clean))
     tests.append(ImgTest('Test for successful output when precipitation maps have ocean where temperature maps have land', test5Fn, test5Clean))
+    tests.append(ImgTest('Test that correct error is thrown for invalid pixel colors in input data', test6Fn, test6Clean))
     runTests(tests, doCleanup)
 
 if __name__ == '__main__':

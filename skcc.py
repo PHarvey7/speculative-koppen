@@ -6,6 +6,7 @@
 
 import sys, getopt, itertools, re, time
 from PIL import Image
+from utils.errors import SKCCError
 from ioHandling.inputHandler import readInputProfile, InputProfile
 from ioHandling.outputHandler import readOutputProfile, OutputProfile
 
@@ -59,15 +60,13 @@ def version():
     sys.exit(0)
 
 def optErr():
-    print('Error: Invalid options. Use the \'-h\' or \'--help\' options for usage information.')
-    sys.exit(0)
+    raise SKCCError('Invalid options. Use the \'-h\' or \'--help\' options for usage information.')
 
 def outputToFile(filename, img):
     try:
         img.save(filename)
     except:
-        print('Error: Could not write to file ' + filename)
-        sys.exit(0)
+        raise SKCCError('Could not write to file' + filename)
 
 # Converts an input pixel color to a temperature value.
 def getTemperatureCategory(tPixel, tempProfile):
@@ -150,8 +149,7 @@ def getPrecipitationPattern(tType, tempTuple, precTuple, annualPrecip):
         else:
             return 'T'
     else:
-        print('Error: invalid climate category for getPrecipitationPattern; should never happen')
-        sys.exit(0)
+        raise SKCCError('Invalid climate category for getPrecipitationPattern; should never happen')
 
 # Gets the seasonal pattern (third letter) for non-A/E climates.
 # A or E climates simply return 'x' which is used as a placeholder marker value
@@ -218,8 +216,7 @@ def getClimateColor(pxTuple, tempProfile, precProfile, outProfile, isNorthernHem
         if (climateCode in outProfile.colorTable):
             return outProfile.colorTable[climateCode]
         else:
-            print('Error: Invalid Köppen-Geiger climate class (should never happen): ' + climateCode)
-            sys.exit(0)
+            raise SKCCError('Invalid Köppen-Geiger climate class (should never happen): ' + climateCode)
 
 # Returns a function to retrieve the RGB color values of a pixel.
 def makeRGBConversion(img1, img2, img3, img4):
@@ -227,14 +224,11 @@ def makeRGBConversion(img1, img2, img3, img4):
     bandIds = []
     for bandList in bands:
         if not ('R' in bandList):
-            print('Error: No red color channel in one or more input images.')
-            sys.exit(0)
+            raise SKCCError('No red color channel in one or more input images.')
         elif not ('G' in bandList):
-            print('Error: No green color channel in one or more input images.')
-            sys.exit(0)
+            raise SKCCError('No green color channel in one or more input images.')
         elif not ('B' in bandList):
-            print('Error: No blue color channel in one or more input images.')
-            sys.exit(0)
+            raise SKCCError('No blue color channel in one or more input images.')
         else:
             bandIds.append((bandList.index('R'), bandList.index('G'), bandList.index('B')))
     if (bandList[0] == ('R', 'G', 'B')) and (bandList[1] == ('R', 'G', 'B')) and (bandList[2] == ('R', 'G', 'B')) and (bandList[3] == ('R', 'G', 'B')):
@@ -271,8 +265,7 @@ def buildClimates(t1name, t2name, p1name, p2name, tempProfile, precProfile, outP
         climateImg = Image.new('RGB', (temperature1.size[0], temperature1.size[1]))
         climateImg.putdata(newPix)
     except:
-        print('Error: General error occurred (check input data filenames and correctness)')
-        sys.exit(0)
+        raise
     return climateImg
 
 # Reads in an output profile and checks that all its keys are valid Koppen classes.
@@ -284,7 +277,7 @@ def readAndValidateOutputProfile(fname):
    for climate in profile.colorTable:
        if not (climate == 'Ocean'):
            if (not (climate in kColorTableDefault)):
-               print('Error: Invalid Köppen-Geiger class in output profile: ' + climate)
+               raise SKCCError('Invalid Köppen-Geiger class in output profile: ' + climate)
        else:
            if profile.ignoredColor != defaultOceanColor:
                profile.ignoredColor = profile.colorTable[climate]
@@ -294,84 +287,94 @@ def readAndValidateOutputProfile(fname):
 
 # Begin script
 if __name__ == '__main__':
+    debug = False
     try:
-        options, xarguments = getopt.getopt(sys.argv[1:], 'hvso:t:u:p:q:v:r:k:', ['help', 'version', 'quiet', 'outfile=', 'tempnw=', 'tempns=', 'precnw=', 'precns=', 'tempprof=', 'precprof=', 'outprof='])
-    except getopt.error:
-        optErr()
+        try:
+            options, xarguments = getopt.getopt(sys.argv[1:], 'hvso:t:u:p:q:v:r:k:d', ['help', 'version', 'quiet', 'outfile=', 'tempnw=', 'tempns=', 'precnw=', 'precns=', 'tempprof=', 'precprof=', 'outprof=', 'debug'])
+        except getopt.error:
+            optErr()
 
-    startTime = time.time()
+        startTime = time.time()
 
-    tempFileNameNW = ''
-    tempFileNameNS = ''
-    precFileNameNW = ''
-    precFileNameNS = ''
-    outfileName = ''
+        tempFileNameNW = ''
+        tempFileNameNS = ''
+        precFileNameNW = ''
+        precFileNameNS = ''
+        outfileName = ''
+        
+        # Set up default color profiles
+        tempProfile = InputProfile(tColorTableDefault, [defaultOceanColor])
+        precProfile = InputProfile(pColorTableDefault, [defaultOceanColor])
+        outProfile = OutputProfile(kColorTableDefault, defaultOceanColor, defaultUnknownColor)
 
-    # Set up default color profiles
-    tempProfile = InputProfile(tColorTableDefault, [defaultOceanColor])
-    precProfile = InputProfile(pColorTableDefault, [defaultOceanColor])
-    outProfile = OutputProfile(kColorTableDefault, defaultOceanColor, defaultUnknownColor)
-
-    quiet = False
-
-    # Parse options
-    for a in options[:]:
-        if a[0] == '-h' or a[0] == '--help':
-            usage()
-    for a in options[:]:
-        if a[0] == '-v' or a[0] == '--version':
-            version()
-    for a in options[:]:
-        if a[0] == '-o' or a[0] == '--outfile':
-            if a[1] == '':
-                optErr()
-            else:
-                outfileName = a[1]
-        if a[0] == '-t' or a[0] == '--tempnw':
-            if a[1] == '':
-                optErr()
-            else:
-                tempFileNameNW = a[1]
-        if a[0] == '-u' or a[0] == '--tempns':
-            if a[1] == '':
-                optErr()
-            else:
-                tempFileNameNS = a[1]
-        if a[0] == '-p' or a[0] == '--precnw':
-            if a[1] == '':
-                optErr()
-            else:
-                precFileNameNW = a[1]
-        if a[0] == '-q' or a[0] == '--precns':
-            if a[1] == '':
-                optErr()
-            else:
-                precFileNameNS = a[1]
-        if a[0] == '-v' or a[0] == '--tempprof':
-            if a[1] == '':
-                optErr()
-            else:
-                tempProfile = readInputProfile(a[1])
-        if a[0] == '-r' or a[0] == '--precprof':
-            if a[1] == '':
-                optErr()
-            else:
-                precProfile = readInputProfile(a[1])
-        if a[0] == '-k' or a[0] == '--outprof':
-            if a[1] == '':
-                optErr()
-            else:
-                outProfile = readAndValidateOutputProfile(a[1])
-        if a[0] == '-s' or a[0] == '--quiet':
-            quiet = True
-    if ((not tempFileNameNS) or (not tempFileNameNW) or (not precFileNameNS) or (not precFileNameNW)):
-        print('Error: One or more required input data files were not specified.')
-        sys.exit(0)
-    if (not outfileName):
-        print('Error: No output filename specified.')
-        sys.exit(0)
-    outputToFile(outfileName, buildClimates(tempFileNameNS, tempFileNameNW, precFileNameNS, precFileNameNW, tempProfile, precProfile, outProfile))
-    if not quiet:
-        stopTime = time.time()
-        timeDiffRounded = format(stopTime - startTime, '.2f')
-        print('Output climate map to ' + outfileName + ' (' + timeDiffRounded + 's).')
+        quiet = False
+        # Parse options
+        for a in options[:]:
+            if a[0] == '-d' or a[0] == '--debug':
+                debug = True
+        for a in options[:]:
+            if a[0] == '-h' or a[0] == '--help':
+                usage()
+        for a in options[:]:
+            if a[0] == '-v' or a[0] == '--version':
+                version()
+        for a in options[:]:
+            if a[0] == '-o' or a[0] == '--outfile':
+                if a[1] == '':
+                    optErr()
+                else:
+                    outfileName = a[1]
+            if a[0] == '-t' or a[0] == '--tempnw':
+                if a[1] == '':
+                    optErr()
+                else:
+                    tempFileNameNW = a[1]
+            if a[0] == '-u' or a[0] == '--tempns':
+                if a[1] == '':
+                    optErr()
+                else:
+                    tempFileNameNS = a[1]
+            if a[0] == '-p' or a[0] == '--precnw':
+                if a[1] == '':
+                    optErr()
+                else:
+                    precFileNameNW = a[1]
+            if a[0] == '-q' or a[0] == '--precns':
+                if a[1] == '':
+                    optErr()
+                else:
+                    precFileNameNS = a[1]
+            if a[0] == '-v' or a[0] == '--tempprof':
+                if a[1] == '':
+                    optErr()
+                else:
+                    tempProfile = readInputProfile(a[1])
+            if a[0] == '-r' or a[0] == '--precprof':
+                if a[1] == '':
+                    optErr()
+                else:
+                    precProfile = readInputProfile(a[1])
+            if a[0] == '-k' or a[0] == '--outprof':
+                if a[1] == '':
+                    optErr()
+                else:
+                    outProfile = readAndValidateOutputProfile(a[1])
+            if a[0] == '-s' or a[0] == '--quiet':
+                quiet = True
+        if ((not tempFileNameNS) or (not tempFileNameNW) or (not precFileNameNS) or (not precFileNameNW)):
+            raise SKCCError('One or more required input data files were not specified.')
+        if (not outfileName):
+            raise SKCCError('No output filename specified.')
+        outputToFile(outfileName, buildClimates(tempFileNameNS, tempFileNameNW, precFileNameNS, precFileNameNW, tempProfile, precProfile, outProfile))
+        if not quiet:
+            stopTime = time.time()
+            timeDiffRounded = format(stopTime - startTime, '.2f')
+            print('Output climate map to ' + outfileName + ' (' + timeDiffRounded + 's).')
+    except Exception as e:
+        # An error occurred.
+        if (debug):
+            # Output the error with stack trace if debug flag is on.
+            raise
+        else:
+            # Output the error without cluttering things up with the stack trace.
+            print('Error: ' + str(e))
