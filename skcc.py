@@ -42,6 +42,7 @@ def usage():
     -h, --help    : Displays this message
     -v, --version : Displays the current version of skcc.py
     -s, --quiet   : Silences successful completion output
+    -d, --debug   : Displays stack traces for runtime errors (defaults to off)
     -o<fname>, --outfile=<fname>  : Outputs the resulting image to the filepath '<fname>', 
                                     requires two temperature and two precipitation inputs. Required.
     -t<fname>, --tempnw=<fname>   : Takes temperature input data for northern-hemisphere winter 
