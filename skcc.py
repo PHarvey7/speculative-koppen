@@ -10,7 +10,9 @@ from utils.errors import SKCCError
 from ioHandling.inputHandler import readInputProfile, InputProfile
 from ioHandling.outputHandler import readOutputProfile, OutputProfile
 
-versionNumber = '0.0.6'
+versionNumber = '0.0.7'
+
+modes = {'koppen', 'holdridge'}
 
 kColorTableDefault = {'Af':(11, 36, 250), 'As':(76, 171, 247), 'Aw':(76, 171, 247), 'Am':(21, 123, 251), 
                'Cfa':(199, 253, 92), 'Csa':(255, 253, 56), 'Cwa':(153, 253, 154),
@@ -22,6 +24,27 @@ kColorTableDefault = {'Af':(11, 36, 250), 'As':(76, 171, 247), 'Aw':(76, 171, 24
                'Dfd':(6, 69, 93), 'Dsd':(149, 101, 148), 'Dwd':(50, 14, 133),
                'ET':(178, 178, 178), 'EF':(104, 104, 104),
                'BSh':(243, 162, 39), 'BSk':(254, 218, 108), 'BWh':(251, 13, 27), 'BWk':(252, 151, 151)}
+
+hColorTableDefault = {'Ice':(255, 255, 255), 'Polar desert':(214, 214, 214), 
+                      'Subpolar dry tundra':(111, 131, 132), 'Subpolar moist tundra':(111, 131, 132),
+                      'Subpolar wet tundra':(111, 131, 132), 'Subpolar rain tundra':(111, 131, 132), 
+                      'Boreal desert':(222, 207, 143), 'Boreal dry scrub':(181, 180, 130),
+                      'Boreal moist forest':(34, 96, 96), 'Boreal wet forest':(34, 96, 96), 
+                      'Boreal rain forest':(34, 96, 96), 'Cool temperate desert':(222, 207, 143),
+                      'Cool temperate desert scrub':(181, 180, 130), 'Cool temperate steppe':(85, 153, 84),
+                      'Cool temperate moist forest':(27, 153, 119), 'Cool temperate wet forest':(27, 153, 119),
+                      'Cool temperate rain forest':(27, 153, 119), 'Warm temperate desert':(254, 224, 92), 
+                      'Warm temperate desert scrub':(194, 195, 101), 'Warm temperate thorn scrub':(132, 202, 90),
+                      'Warm temperate dry forest':(132, 202, 90), 'Warm temperate moist forest':(32, 203, 126), 
+                      'Warm temperate wet forest':(32, 203, 126), 'Warm temperate rain forest':(32, 203, 126),
+                      'Subtropical desert':(254, 224, 92), 'Subtropical desert scrub':(194, 195, 101), 
+                      'Subtropical thorn woodland':(202, 232, 94), 'Subtropical dry forest':(94, 230, 95),
+                      'Subtropical moist forest':(94, 230, 95), 'Subtropical wet forest':(41, 177, 72), 
+                      'Subtropical rain forest':(41, 177, 72), 'Tropical desert':(254, 224, 92),
+                      'Tropical desert scrub':(194, 195, 101), 'Tropical thorn woodland':(202, 232, 94), 
+                      'Tropical very dry forest':(202, 232, 94), 'Tropical dry forest':(94, 230, 95),
+                      'Tropical moist forest':(41, 177, 72), 'Tropical wet forest':(41, 177, 72), 
+                      'Tropical rain forest':(41, 177, 72)}
 
 tColorTableDefault = {(160, 0, 65):38, (210, 60, 80):31, (245, 110, 65):25, (250, 175, 95):20,
                (255, 225, 140):14, (230, 245, 150):5, (170, 220, 165):-5, (100, 195, 165):-18,
@@ -183,8 +206,8 @@ def getSeasonalPattern(tType, tempTuple):
 # Given an input pixel from each input map, returns an output color value
 # corresponding to its climate class according to the output profile's color mapping.
 def getClimateColor(pxTuple, tempProfile, precProfile, outProfile, isNorthernHemis):
-    #pxTuple contains a tuple of four pixels, for (temp1, temp2, precip1, precip2).
-    #If either temperature is the ocean color we treat this pixel as ocean and ignore it.
+    # pxTuple contains a tuple of four pixels, for (temp1, temp2, precip1, precip2).
+    # If this pixel in any input has the ocean color we treat this pixel as ocean and ignore it.
     if (tempProfile.isIgnored(pxTuple[0]) or pxTuple[1] == tempProfile.isIgnored(pxTuple[1]) or
         pxTuple[2] == precProfile.isIgnored(pxTuple[2]) or precProfile.isIgnored(pxTuple[3])):
         return outProfile.ignoredColor
@@ -219,6 +242,130 @@ def getClimateColor(pxTuple, tempProfile, precProfile, outProfile, isNorthernHem
         else:
             raise SKCCError('Invalid Köppen-Geiger climate class (should never happen): ' + climateCode)
 
+
+# Bounds a temperature to make a biotemperature, to 30 degrees C ceiling or 0 degrees C floor.
+def boundTemperature(temp):
+    return min(max(temp, 0), 30)
+
+# Given a tuple of temperatures (extreme 1, extreme 2), compute an average biotemperature extrapolation.
+# Uses a sine-wave approximation to interpolate between month temperatures, then applies
+# 30 degrees C or 0 degrees C as a ceiling and floor respectively, then sums up and averages over all 12 months.
+def getBiotemperature(tempTuple):
+    tempTotal = 0
+    tempTotal += boundTemperature(tempTuple[0])
+    # Coefficients precomputed and hardcoded for speed
+    # Are (sin(pi/6)+1)/2, 1-(sin(pi/6)+1)/2), (sin(pi/3)+1)/2, etc.
+    tempTotal += 2*boundTemperature((tempTuple[0]*0.9330127)+(tempTuple[1]*0.0669873))
+    tempTotal += 2*boundTemperature((tempTuple[0]*0.75)+(tempTuple[1]*0.25))
+    tempTotal += 2*boundTemperature((tempTuple[0]*0.5)+(tempTuple[1]*0.5))
+    tempTotal += 2*boundTemperature((tempTuple[0]*0.25)+(tempTuple[1]*0.75))
+    tempTotal += 2*boundTemperature((tempTuple[0]*0.0669873)+(tempTuple[1]*0.9330127))
+    tempTotal += boundTemperature(tempTuple[1])
+    return tempTotal / 12
+
+# Looks up a life zone category and gets the color given a biotemperature and
+# annual precipitation estimate.
+# 17 degrees C is used as the 'critical temperature line' delineating the
+# definition of subtropical vs. warm temperate.
+def lookupLifeZoneColor(bioTemp, precTotal, outProfile):
+    if (bioTemp <= 0):
+        return outProfile.colorTable['Ice']
+    elif (bioTemp < 1.5):
+        return outProfile.colorTable['Polar desert']
+    elif (bioTemp < 3):
+        if (precTotal < 125):
+            return outProfile.colorTable['Subpolar dry tundra']
+        elif (precTotal < 250):
+            return outProfile.colorTable['Subpolar moist tundra']
+        elif (precTotal < 500):
+            return outProfile.colorTable['Subpolar wet tundra']
+        else:
+            return outProfile.colorTable['Subpolar rain tundra']
+    elif (bioTemp < 6):
+        if (precTotal < 125):
+            return outProfile.colorTable['Boreal desert']
+        elif (precTotal < 250):
+            return outProfile.colorTable['Boreal dry scrub']
+        elif (precTotal < 500):
+            return outProfile.colorTable['Boreal moist forest']
+        elif (precTotal < 1000):
+            return outProfile.colorTable['Boreal wet forest']
+        else:
+            return outProfile.colorTable['Boreal rain forest']
+    elif (bioTemp < 12):
+        if (precTotal < 125):
+            return outProfile.colorTable['Cool temperate desert']
+        elif (precTotal < 250):
+            return outProfile.colorTable['Cool temperate desert scrub']
+        elif (precTotal < 500):
+            return outProfile.colorTable['Cool temperate steppe']
+        elif (precTotal < 1000):
+            return outProfile.colorTable['Cool temperate moist forest']
+        elif (precTotal < 2000):
+            return outProfile.colorTable['Cool temperate wet forest']
+        else:
+            return outProfile.colorTable['Cool temperate rain forest']
+    elif (bioTemp < 17):
+        if (precTotal < 125):
+            return outProfile.colorTable['Warm temperate desert']
+        elif (precTotal < 250):
+            return outProfile.colorTable['Warm temperate desert scrub']
+        elif (precTotal < 500):
+            return outProfile.colorTable['Warm temperate thorn scrub']
+        elif (precTotal < 1000):
+            return outProfile.colorTable['Warm temperate dry forest']
+        elif (precTotal < 2000):
+            return outProfile.colorTable['Warm temperate moist forest']
+        elif (precTotal < 4000):
+            return outProfile.colorTable['Warm temperate wet forest']
+        else:
+            return outProfile.colorTable['Warm temperate rain forest']
+    elif (bioTemp < 24):
+        if (precTotal < 125):
+            return outProfile.colorTable['Subtropical desert']
+        elif (precTotal < 250):
+            return outProfile.colorTable['Subtropical desert scrub']
+        elif (precTotal < 500):
+            return outProfile.colorTable['Subtropical thorn woodland']
+        elif (precTotal < 1000):
+            return outProfile.colorTable['Subtropical dry forest']
+        elif (precTotal < 2000):
+            return outProfile.colorTable['Subtropical moist forest']
+        elif (precTotal < 4000):
+            return outProfile.colorTable['Subtropical wet forest']
+        else:
+            return outProfile.colorTable['Subtropical rain forest']
+    else:
+        if (precTotal < 125):
+            return outProfile.colorTable['Tropical desert']
+        elif (precTotal < 250):
+            return outProfile.colorTable['Tropical desert scrub']
+        elif (precTotal < 500):
+            return outProfile.colorTable['Tropical thorn woodland']
+        elif (precTotal < 1000):
+            return outProfile.colorTable['Tropical very dry forest']
+        elif (precTotal < 2000):
+            return outProfile.colorTable['Tropical dry forest']
+        elif (precTotal < 4000):
+            return outProfile.colorTable['Tropical moist forest']
+        elif (precTotal < 8000):
+            return outProfile.colorTable['Tropical wet forest']
+        else:
+            return outProfile.colorTable['Tropical rain forest']
+
+# Given an input pixel from each input map, returns an output color value
+# corresponding to its Holdridge life zone category according to the output profile's color mapping.
+def getLifeZoneColor(pxTuple, tempProfile, precProfile, outProfile):
+    if (tempProfile.isIgnored(pxTuple[0]) or pxTuple[1] == tempProfile.isIgnored(pxTuple[1]) or
+        pxTuple[2] == precProfile.isIgnored(pxTuple[2]) or precProfile.isIgnored(pxTuple[3])):
+        return outProfile.ignoredColor
+    else:
+        tempTuple = (getTemperatureCategory(pxTuple[0], tempProfile), getTemperatureCategory(pxTuple[1], tempProfile))
+        precTuple = (getPrecipCategory(pxTuple[2], precProfile), getPrecipCategory(pxTuple[3], precProfile))
+        biotemp = getBiotemperature(tempTuple)
+        precTotal = ((precTuple[0]*6)+(precTuple[1]*6))
+        return lookupLifeZoneColor(biotemp, precTotal, outProfile)
+
 # Returns a function to retrieve the RGB color values of a pixel.
 def makeRGBConversion(img1, img2, img3, img4):
     bands = [img1.getbands(), img2.getbands(), img3.getbands(), img4.getbands()]
@@ -246,33 +393,34 @@ def makeRGBConversion(img1, img2, img3, img4):
         return getRGB
     
 
-# Builds a raw image representing the Köppen-Geiger climate classification based on
-# the input temperature and precipitation maps interpreted via the input temperature
+# Builds a raw image representing the classification corresponding to the selected mode 
+# based on the input temperature and precipitation maps interpreted via the input temperature
 # and precipitation color profiles.
-def buildClimates(t1name, t2name, p1name, p2name, tempProfile, precProfile, outProfile):
-    try:
-        temperature1 = Image.open(t1name)
-        temperature2 = Image.open(t2name)
-        precipitation1 = Image.open(p1name)
-        precipitation2 = Image.open(p2name)
-        temps1 = temperature1.getdata()
-        temps2 = temperature2.getdata()
-        precs1 = precipitation1.getdata()
-        precs2 = precipitation2.getdata()
-        rawData = zip(temps1, temps2, precs1, precs2)
-        getRGBs = makeRGBConversion(temperature1, temperature2, precipitation1, precipitation2)
+def buildOutput(t1name, t2name, p1name, p2name, tempProfile, precProfile, outProfile, mode='koppen'):
+    temperature1 = Image.open(t1name)
+    temperature2 = Image.open(t2name)
+    precipitation1 = Image.open(p1name)
+    precipitation2 = Image.open(p2name)
+    temps1 = temperature1.getdata()
+    temps2 = temperature2.getdata()
+    precs1 = precipitation1.getdata()
+    precs2 = precipitation2.getdata()
+    rawData = zip(temps1, temps2, precs1, precs2)
+    getRGBs = makeRGBConversion(temperature1, temperature2, precipitation1, precipitation2)
+    if (mode == 'koppen'):
         newPix = [getClimateColor(getRGBs(pxTuple), tempProfile, precProfile, outProfile, idx < (len(temps1) / 2)) 
                   for idx, pxTuple in enumerate(rawData)]
-        climateImg = Image.new('RGB', (temperature1.size[0], temperature1.size[1]))
-        climateImg.putdata(newPix)
-    except:
-        raise
-    return climateImg
+    elif (mode == 'holdridge'):
+        newPix = [getLifeZoneColor(getRGBs(pxTuple), tempProfile, precProfile, outProfile)
+                  for idx, pxTuple in enumerate(rawData)]
+    outputImg = Image.new('RGB', (temperature1.size[0], temperature1.size[1]))
+    outputImg.putdata(newPix)
+    return outputImg
 
 # Reads in an output profile and checks that all its keys are valid Koppen classes.
 # Also removes the 'Ocean' color from the color table and makes it the ignored color
 # if one wasn't specified (backwards compatability).
-def readAndValidateOutputProfile(fname):
+def readAndValidateKoppenOutputProfile(fname):
    profile = readOutputProfile(fname)
    
    for climate in profile.colorTable:
@@ -286,12 +434,36 @@ def readAndValidateOutputProfile(fname):
        profile.colorTable.pop(climate, None)
    return profile
 
+# Reads in an output profile and checks that all its keys are valid Holdridge zones.
+# Also removes the 'Ocean' color from the color table and makes it the ignored color
+# if one wasn't specified (backwards compatability).  
+def readAndValidateHoldridgeOutputProfile(fname):
+    profile = readOutputProfile(fname)
+
+    for zone in profile.colorTable:
+        if not (zone == 'Ocean'):
+            if (not (zone in hColorTableDefault)):
+                raise SKCCError('Invalid Holdridge category in output profile: ' + zone)
+        else:
+            if profile.ignoredColor != defaultOceanColor:
+                profile.ignoredColor = profile.colorTable[zone]
+    if ('Ocean' in profile.colorTable):
+        profile.colorTable.pop('Ocean', None)
+    return profile
+
+# Validates that a mode is a valid mode value.
+def validateMode(md):
+    if md in modes:
+        return md
+    else:
+        raise SKCCError('Invalid mode specified: ' + mode) 
+
 # Begin script
 if __name__ == '__main__':
     debug = False
     try:
         try:
-            options, xarguments = getopt.getopt(sys.argv[1:], 'hvso:t:u:p:q:v:r:k:d', ['help', 'version', 'quiet', 'outfile=', 'tempnw=', 'tempns=', 'precnw=', 'precns=', 'tempprof=', 'precprof=', 'outprof=', 'debug'])
+            options, xarguments = getopt.getopt(sys.argv[1:], 'hvso:t:u:p:q:v:r:k:dm:', ['help', 'version', 'quiet', 'outfile=', 'tempnw=', 'tempns=', 'precnw=', 'precns=', 'tempprof=', 'precprof=', 'outprof=', 'debug', 'mode='])
         except getopt.error:
             optErr()
 
@@ -302,14 +474,19 @@ if __name__ == '__main__':
         precFileNameNW = ''
         precFileNameNS = ''
         outfileName = ''
+
+        # Default mode for the script is to do Köppen-Geiger climates
+        mode = 'koppen'
         
         # Set up default color profiles
         tempProfile = InputProfile(tColorTableDefault, [defaultOceanColor])
         precProfile = InputProfile(pColorTableDefault, [defaultOceanColor])
+
         outProfile = OutputProfile(kColorTableDefault, defaultOceanColor, defaultUnknownColor)
 
         quiet = False
-        # Parse options
+        # Parse options - debug, help, version, and mode flags either must come before or they
+        # override certain other flags, so they must be parsed first.
         for a in options[:]:
             if a[0] == '-d' or a[0] == '--debug':
                 debug = True
@@ -319,6 +496,14 @@ if __name__ == '__main__':
         for a in options[:]:
             if a[0] == '-v' or a[0] == '--version':
                 version()
+        for a in options[:]:
+            if a[0] == '-m' or a[0] == '--mode':
+                if a[1] == '':
+                    optErr()
+                else:
+                    mode = validateMode(a[1])
+                    if (mode == 'holdridge'):
+                        outProfile = OutputProfile(hColorTableDefault, defaultOceanColor, defaultUnknownColor)
         for a in options[:]:
             if a[0] == '-o' or a[0] == '--outfile':
                 if a[1] == '':
@@ -359,14 +544,20 @@ if __name__ == '__main__':
                 if a[1] == '':
                     optErr()
                 else:
-                    outProfile = readAndValidateOutputProfile(a[1])
+                    # Output profiles differ by mode
+                    if (mode == 'koppen'):
+                        outProfile = readAndValidateKoppenOutputProfile(a[1])
+                    elif (mode == 'holdridge'):
+                        outProfile = readAndValidateHoldridgeOutputProfile(a[1])
             if a[0] == '-s' or a[0] == '--quiet':
                 quiet = True
         if ((not tempFileNameNS) or (not tempFileNameNW) or (not precFileNameNS) or (not precFileNameNW)):
             raise SKCCError('One or more required input data files were not specified.')
         if (not outfileName):
             raise SKCCError('No output filename specified.')
-        outputToFile(outfileName, buildClimates(tempFileNameNS, tempFileNameNW, precFileNameNS, precFileNameNW, tempProfile, precProfile, outProfile))
+
+        # Generate the output.
+        outputToFile(outfileName, buildOutput(tempFileNameNS, tempFileNameNW, precFileNameNS, precFileNameNW, tempProfile, precProfile, outProfile, mode))
         if not quiet:
             stopTime = time.time()
             timeDiffRounded = format(stopTime - startTime, '.2f')

@@ -27,14 +27,14 @@ def readOutputProfile(fname):
     try:
         for line in fp:
             if ((line[0] != '#') and (not (line.isspace()))):
-                rmatch = re.match(r"""\s*([^:\s]+)\s*:\s*\(\s*([0-9]+\s*,\s*[0-9]+\s*,\s*[0-9]+\s*)\s*\)""", line)
+                rmatch = re.match(r"""\s*([^:]+)\s*:\s*\(\s*([0-9]+\s*,\s*[0-9]+\s*,\s*[0-9]+\s*)\s*\)""", line)
                 if rmatch:
                     oColor = rmatch.group(2)
                     rgbVals = oColor.split(',')
                     rval = int(rgbVals[0].strip())
                     gval = int(rgbVals[1].strip())
                     bval = int(rgbVals[2].strip())
-                    key = rmatch.group(1)
+                    key = rmatch.group(1).strip()
                     if ((rval < 0) or (rval > 255) or (gval < 0) or (gval > 255) or (bval < 0) or (bval > 255)):
                         raise SKCCError('Invalid RGB color in output profile: ' + str((rval, gval, bval)))
                     if (key == 'Ignored'):

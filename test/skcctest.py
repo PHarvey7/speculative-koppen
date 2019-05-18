@@ -9,7 +9,7 @@ import sys, os, getopt
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from imgtest import ImgTest, compareImages, deleteFiles, runTests
-from skcc import outputToFile, buildClimates, tColorTableDefault, defaultOceanColor, pColorTableDefault, kColorTableDefault, readAndValidateOutputProfile, defaultUnknownColor
+from skcc import outputToFile, buildOutput, tColorTableDefault, defaultOceanColor, pColorTableDefault, kColorTableDefault, readAndValidateKoppenOutputProfile, defaultUnknownColor, hColorTableDefault
 from ioHandling.inputHandler import readInputProfile, InputProfile
 from ioHandling.outputHandler import OutputProfile
 from utils.errors import SKCCError
@@ -45,7 +45,7 @@ def test1Fn():
 
     comparePath = getTestDirPath('ProfiaOutputDefault.png')
 
-    outputToFile(outputPath, buildClimates(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf))
+    outputToFile(outputPath, buildOutput(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf))
 
     return compareImages(outputPath, comparePath)
 
@@ -57,14 +57,14 @@ def test1Clean():
 def test2Fn():
     tempProf = InputProfile(tColorTableDefault, [defaultOceanColor])
     precProf = InputProfile(pColorTableDefault, [defaultOceanColor])
-    outProf = readAndValidateOutputProfile(getParentDirPath('altOutputProfile'))
+    outProf = readAndValidateKoppenOutputProfile(getParentDirPath('altOutputProfile'))
 
     outputPath = getTestDirPath('test2-out.png')
     tempnsPath, tempnwPath, precnsPath, precnwPath = getProfiaInputs()
 
     comparePath = getTestDirPath('ProfiaOutputAlt.png')
 
-    outputToFile(outputPath, buildClimates(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf))
+    outputToFile(outputPath, buildOutput(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf))
 
     return compareImages(outputPath, comparePath)
 
@@ -76,14 +76,14 @@ def test2Clean():
 def test3Fn():
     tempProf = InputProfile(tColorTableDefault, [defaultOceanColor])
     precProf = InputProfile(pColorTableDefault, [defaultOceanColor])
-    outProf = readAndValidateOutputProfile(getParentDirPath('defaultOutputProfile'))
+    outProf = readAndValidateKoppenOutputProfile(getParentDirPath('defaultOutputProfile'))
 
     outputPath = getTestDirPath('test3-out.png')
     tempnsPath, tempnwPath, precnsPath, precnwPath = getBoxesInputs()
 
     comparePath = getTestDirPath('BoxesOutputDefault.png')
 
-    outputToFile(outputPath, buildClimates(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf))
+    outputToFile(outputPath, buildOutput(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf))
                                 
     return compareImages(outputPath, comparePath)
 
@@ -95,14 +95,14 @@ def test3Clean():
 def test4Fn():
     tempProf = InputProfile(tColorTableDefault, [defaultOceanColor])
     precProf = InputProfile(pColorTableDefault, [defaultOceanColor])
-    outProf = readAndValidateOutputProfile(getParentDirPath('defaultOutputProfile'))
+    outProf = readAndValidateKoppenOutputProfile(getParentDirPath('defaultOutputProfile'))
 
     outputPath = getTestDirPath('test4-out.png')
     tempnsPath, tempnwPath, precnsPath, precnwPath = getBoxesInputsSwappedPrecipitations()
 
     comparePath = getTestDirPath('BoxesOutputSwapped.png')
 
-    outputToFile(outputPath, buildClimates(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf))
+    outputToFile(outputPath, buildOutput(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf))
 
     return compareImages(outputPath, comparePath)
 
@@ -121,7 +121,7 @@ def test5Fn():
 
     comparePath = getTestDirPath('ProfiaOutputPrecipOcean.png')
 
-    outputToFile(outputPath, buildClimates(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf))
+    outputToFile(outputPath, buildOutput(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf))
 
     return compareImages(outputPath, comparePath)
 
@@ -140,7 +140,7 @@ def test6Fn():
 
     correctError = False
     try:
-        buildClimates(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf)
+        buildOutput(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf)
     except SKCCError as e:
         if (str(e) == 'Invalid color in input data (did not match input profile): (255, 0, 0)'):
             correctError = True
@@ -153,6 +153,25 @@ def test6Clean():
     dPaths = [outputPath]
     deleteFiles(dPaths)
 
+def test7Fn():
+    tempProf = InputProfile(tColorTableDefault, [defaultOceanColor])
+    precProf = InputProfile(pColorTableDefault, [defaultOceanColor])
+    outProf = OutputProfile(hColorTableDefault, defaultOceanColor, defaultUnknownColor)
+
+    outputPath = getTestDirPath('test7-out.png')
+    tempnsPath, tempnwPath, precnsPath, precnwPath = getProfiaInputs()
+
+    comparePath = getTestDirPath('ProfiaHoldridgeOutput.png')
+
+    outputToFile(outputPath, buildOutput(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf, 'holdridge'))
+
+    return compareImages(outputPath, comparePath)
+
+def test7Clean():
+    outputPath = getTestDirPath('test7-out.png')
+    dPaths = [outputPath]
+    deleteFiles(dPaths)
+
 def runAll(doCleanup):
     tests = []
     tests.append(ImgTest('All default profiles - Profia test', test1Fn, test1Clean))
@@ -161,6 +180,7 @@ def runAll(doCleanup):
     tests.append(ImgTest('All default profiles - Boxes test (swapped summer/winter precipitation)', test4Fn, test4Clean))
     tests.append(ImgTest('Test for successful output when precipitation maps have ocean where temperature maps have land', test5Fn, test5Clean))
     tests.append(ImgTest('Test that correct error is thrown for invalid pixel colors in input data', test6Fn, test6Clean))
+    tests.append(ImgTest('All default profiles - Holdridge mode Profia test', test7Fn, test7Clean))
     runTests(tests, doCleanup)
 
 if __name__ == '__main__':

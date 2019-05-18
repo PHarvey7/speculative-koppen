@@ -1,7 +1,7 @@
 Speculative Köppen-Geiger Climate Classifier (skcc.py)
 (c) 2018 Patrick Harvey [see the included LICENSE.txt]
 
-skcc is a simple command-line tool intended for automating the process of using input temperature and precipitation data in image form to classify regions according to the Köppen-Geiger climate classification system. It is aimed at speculative or fictional worlds and is designed to work with input data formatted in a way that is more feasible for creation by analysis or fiat rather than empirical measurement. As such, it is not strictly accurate to the climate classification system, as the input model does not support this; however, the goal is that it produces a reasonable approximation.
+skcc is a simple command-line tool intended for automating the process of using input temperature and precipitation data in image form to classify regions according to the Köppen-Geiger climate classification system (or other systems). It is aimed at speculative or fictional worlds and is designed to work with input data formatted in a way that is more feasible for creation by analysis or fiat rather than empirical measurement. As such, it is not strictly accurate to the climate classification system, as the input model does not support this; however, the goal is that it produces a reasonable approximation.
 
 SETUP / DEPENDENCIES
 
@@ -37,13 +37,33 @@ Defines "defaultOutputProfile" as the filename from which to load the output col
 
 The proper format for the input and output color profile files can be seen in the included default files, which also contain explanations on how to construct custom versions of these. These files also describe the defaults used by skcc.py if no custom color profile is specified for any of the input/output categories.
 
+Another command-line flag allows you to set the script's operational mode. If not specified, it will default to performing Köppen-Geiger climate classification as its normal usage. The mode flag can also be used to perform Holdridge Life Zone category classification instead, by being specified as follows:
+
+--mode=holdridge
+
+Any value passed to the --mode flag that is not a valid mode will result in an error. Valid modes consist of 'koppen' or 'holdridge'.
+
 The final optional command-line flag is --quiet. This disables the text output on completion ('Output climate map to...'). Note that error messages are not disabled by this flag.
 
 Note that the invocation of Python in the command line can depend on your installation. Defaults for different versions of python have used 'python', 'py', etc.. Run Python on the command line using whatever identifier is correct to your installation.
 
+HOLDRIDGE MODE
+
+The script can also perform classification of Holdridge Life Zones, as opposed to Köppen-Geiger climate classification. As noted above this can be enabled by passing '--mode=holdridge' with the other command-line arguments.
+
+The rules for inputs, and how custom colors can be defined, are the same - summer/winter maps of temperature and precipitation are passed in and custom color profiles can optionally be used as opposed to the script's defaults (the default input profiles are the same for Köppen-Geiger and Holdridge classification).
+
+Output profiles must cover the Holdridge Life Zone categories instead of Köppen-Geiger climate classes. The included 'holdridgeDefaultOutputProfile' is a sample custom output profile for Holdridge classification, and matches the default output colors used by the script if no custom output profile is specified. The default color profile lumps numerous Holdridge zone types together; custom options could define significantly more detailed output by giving different colors to some of the categories that are assigned the same colors in the default configuration.
+
+In this mode the classifier extrapolates an average biotemperature for each pixel from the two extremes, assuming a sinusoidal interpolation between those values for intervening months which are then clamped to the range [0, 30] degrees Celsius before averaging over the year. Annual precipitation is approximated by a simple (summer month * 6) + (winter month * 6) from the two input precipitations. The classifier uses 17 degrees Celsius as the 'critical temperature line' for differentiating 'warm temperate' life zones from 'subtropical' ones.
+
+Holdridge mode takes slightly (estimated approx. 20%-25%) longer to run than the default Köppen classification mode. This is because the biotemperature computation is somewhat more computational work-per-pixel than that performed by the Köppen classifier.
+
 NOTES ON KNOWN WEAKNESSES
 
 The input model takes temperature and precipitation only for two extreme months of the year, which is more readily feasible to be hand-generated than twelve individual months. However, this means a precise classification for Cb/Cc and Db/Dc climate categories according to the Köppen-Geiger system cannot be done precisely by the definitions, and the output can be a bit inexact as a result regarding these particular category distinctions. Additionally, this input model means that (for example) regions whose annual precipitations are not well described via extrapolation by the mean of two annual extremes - or where precipitation and temperature extremes do not coincide temporally - can be misrepresented. As skcc.py is intended for classification on fictional worlds this can be less problematic than it is in trying to replicate real-world results based on real-world data, but these are particular notable cases and should be kept in mind.
+
+For Holdridge mode, the script attempts to extrapolate temperature values and annual rainfall total from the given summer/winter extreme month values, which can introduce error. In particular, areas with very dry or very wet extremes may be assessed as drier or wetter than they might realistically be if they were to be measured throughout a year. Again, the goal of this is to keep input relatively manageable to produce by hand or fiat, as a full set of twelve month's data might not be.
 
 TROUBLESHOOTING
 
@@ -86,6 +106,10 @@ Köppen, W., 1884: 'Die Wärmezonen der Erde, nach der Dauer der heissen, gemäs
 
 The particular version of the climate classification on which skcc.py is based on that described in:
 Kottek, M.; Grieser, J.; Beck, C.; Rudolf, B.; Rubel, F., 2006: 'World Map of the Köppen-Geiger climate classification updated' 
+
+Holdridge Life Zones were originally defined by:
+Holdridge, L.R., 1947: 'Determinations of world plant formations from simple climatic data'. Science vol. 105, is. 2727, p.367-36\
+8.
 
 
 
