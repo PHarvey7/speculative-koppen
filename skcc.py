@@ -66,6 +66,8 @@ def usage():
     -v, --version : Displays the current version of skcc.py
     -s, --quiet   : Silences successful completion output
     -d, --debug   : Displays stack traces for runtime errors (defaults to off)
+    -m, --mode    : Sets the operational mode (what to classify). Defaults to koppen mode if not given. Valid settings are
+                    'koppen' or 'holdridge'.
     -o<fname>, --outfile=<fname>  : Outputs the resulting image to the filepath '<fname>', 
                                     requires two temperature and two precipitation inputs. Required.
     -t<fname>, --tempnw=<fname>   : Takes temperature input data for northern-hemisphere winter 
