@@ -43,6 +43,8 @@ Another command-line flag allows you to set the script's operational mode. If no
 
 Any value passed to the --mode flag that is not a valid mode will result in an error. Valid modes consist of 'koppen' or 'holdridge'.
 
+There is also a --debug command-line flag, with no arguments. If present, error output will be more verbose (it will include the Python stack trace of the error). It's mostly of interest for debugging purposes.
+
 The final optional command-line flag is --quiet. This disables the text output on completion ('Output climate map to...'). Note that error messages are not disabled by this flag.
 
 Note that the invocation of Python in the command line can depend on your installation. Defaults for different versions of python have used 'python', 'py', etc.. Run Python on the command line using whatever identifier is correct to your installation.
