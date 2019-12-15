@@ -38,6 +38,9 @@ def getProfiaInputsBadPixel():
 def getBallInputs():
     return getTestDirPath('BallTempJul.png'), getTestDirPath('BallTempJan.png'), getTestDirPath('BallPrecJul.png'), getTestDirPath('BallPrecJan.png')
 
+def getProfiaInputsOceanDefault():
+    return getTestDirPath('ProfiaTempJulRandomOcean.png'), getTestDirPath('ProfiaTempJanRandomOcean.png'), getTestDirPath('ProfiaPrecJulFilledOcean.png'), getTestDirPath('ProfiaPrecJanFilledOcean.png')
+
 def test1Fn():
     tempProf = InputProfile(tColorTableDefault, [defaultOceanColor])
     precProf = InputProfile(pColorTableDefault, [defaultOceanColor])
@@ -213,6 +216,39 @@ def test9Clean():
     dPaths = [outputPath]
     deleteFiles(dPaths)
 
+def test10Fn():
+    correctError = False
+    try:
+        tempProf = readInputProfile(getTestDirPath('testBrokenTempProfile'))
+    except SKCCError as e:
+        if (str(e) == 'Invalid RGB color in input profile: (275, 225, 140)'):
+            correctError = True
+        else:
+            raise
+    return correctError
+
+def test10Clean():
+    pass
+
+def test11Fn():
+    tempProf = readInputProfile(getTestDirPath('testDefaultOceanTempProfile'))
+    precProf = InputProfile(pColorTableDefault, [defaultOceanColor])
+    outProf = OutputProfile(kColorTableDefault, defaultOceanColor, defaultUnknownColor)
+
+    outputPath = getTestDirPath('test11-out.png')
+    tempnsPath, tempnwPath, precnsPath, precnwPath = getProfiaInputsOceanDefault()
+
+    comparePath = getTestDirPath('ProfiaOutputDefault.png')
+
+    outputToFile(outputPath, buildOutput(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf))
+
+    return compareImages(outputPath, comparePath)
+
+def test11Clean():
+    outputPath = getTestDirPath('test11-out.png')
+    dPaths = [outputPath]
+    deleteFiles(dPaths)
+
 def runAll(doCleanup):
     tests = []
     tests.append(ImgTest('All default profiles - Profia test', test1Fn, test1Clean))
@@ -224,6 +260,8 @@ def runAll(doCleanup):
     tests.append(ImgTest('All default profiles - Holdridge mode Profia test', test7Fn, test7Clean))
     tests.append(ImgTest('Test of reading in input profiles - read in of defaults - Profia test', test8Fn, test8Clean))
     tests.append(ImgTest('Test of input profiles with (Default) colors - Ball test', test9Fn, test9Clean))
+    tests.append(ImgTest('Test that correct error is thrown for invalid colors in input profiles', test10Fn, test10Clean))
+    tests.append(ImgTest('Test of input profiles that (Default) to ocean - Profia test', test11Fn, test11Clean))
     runTests(tests, doCleanup)
 
 if __name__ == '__main__':

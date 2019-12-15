@@ -1,0 +1,14 @@
+# For testing.
+# The default temperature profile with Ocean treated as the 'default' value for unrecognized colors.
+
+Severely Hot  :(160, 0, 65)     :38
+Very Hot      :(210, 60, 80)    :31
+Hot           :(245, 110, 65)   :25
+Warm          :(250, 175, 95)   :20
+Mild          :(255, 225, 140)  :14
+Cool          :(230, 245, 150)  :5
+Cold          :(170, 220, 165)  :-5
+Very Cold     :(100, 195, 165)  :-18
+Severely Cold :(50, 135, 190)   :-32
+Deadly Cold   :(95, 80, 160)    :-40
+Ocean         :(Default)        :O
