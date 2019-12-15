@@ -42,14 +42,14 @@ def readInputProfile(fname):
     try:
         for line in fp:
             if ((line[0] != '#') and (not (line.isspace()))):
-                rmatch = re.match(r"""[^:]*:\s*\(([0-9]+,\s*[0-9]+,\s*[0-9]+\s*)\)\s*:\s*(-?[0-9.]*X?)""", line)
+                rmatch = re.match(r"""[^:]*:\s*\((Default|[0-9]+,\s*[0-9]+,\s*[0-9]+\s*)\)\s*:\s*(-?[0-9.]*X?O?)""", line)
                 if rmatch:
                     iColor = rmatch.group(1)
                     if (iColor == 'Default'):
                         iValue = rmatch.group(2)
                         if (not (defaultVal is None)):
                             print('Warning: Duplicate default value in input profile: ' + iValue)
-                        if (iValue == 'X'):
+                        if ((iValue == 'X') or (iValue == 'O')):
                             defaultVal = 'X'
                         else:
                             defaultVal = float(iValue)
@@ -63,7 +63,7 @@ def readInputProfile(fname):
                         iValue = rmatch.group(2)
                         if ((rval, gval, bval) in profTable):
                             print('Warning: Duplicate color in input profile: ' + str((rval, gval, bval)))
-                        if (iValue == 'X'):
+                        if ((iValue == 'X') or (iValue == 'O')):
                             ignoredColors.append((rval, gval, bval))
                         else:
                             ival = float(iValue)
@@ -72,6 +72,6 @@ def readInputProfile(fname):
                     raise SKCCError('Invalid line in input profile: ' + line)
     finally:
         fp.close()
-    return InputProfile(profTable, ignoredColors)
+    return InputProfile(profTable, ignoredColors, default=defaultVal)
 
         
