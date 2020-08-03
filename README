@@ -1,5 +1,5 @@
 Speculative Köppen-Geiger Climate Classifier (skcc.py)
-(c) 2018 Patrick Harvey [see the included LICENSE.txt]
+(c) 2018-2020 Patrick Harvey [see the included LICENSE.txt]
 
 skcc is a simple command-line tool intended for automating the process of using input temperature and precipitation data in image form to classify regions according to the Köppen-Geiger climate classification system (or other systems). It is aimed at speculative or fictional worlds and is designed to work with input data formatted in a way that is more feasible for creation by analysis or fiat rather than empirical measurement. As such, it is not strictly accurate to the climate classification system, as the input model does not support this; however, the goal is that it produces a reasonable approximation.
 
@@ -97,7 +97,7 @@ In response to error messages:
 
 "Error: Invalid <temperature|precipitation> map color value: (<R>,<G>,<B>)"
 
---> Indicates that an input temperature or precipitation map contained pixels of a color that does not match any color in the input temperature or precipitation color profile in use. If no --tempprof or --precprof flags were specified, the script will be using the same profile as that indicated in defaultTempProfile and defaultPrecProfile respectively. If custom profiles were provided, the script will be using these. This error can commonly be caused by having used antialiased drawing tools in creating the input maps - all the colors used must be pixel-exact, so avoid 'paintbrush' type tools and the like for constructing the input maps. If custom profiles were used, also check to make sure that these profiles specify the same RGB colors used in the input maps of the corresponding type.
+--> Indicates that an input temperature or precipitation map contained pixels of a color that does not match any color in the input temperature or precipitation color profile in use. If no --tempprof or --precprof flags were specified, the script will be using the same profile as that indicated in defaultTempProfile and defaultPrecProfile respectively. If custom profiles were provided, the script will be using these. This error can commonly be caused by having used antialiased drawing tools in creating the input maps - all the colors used must be pixel-exact, so avoid 'paintbrush' type tools and the like for constructing the input maps. If custom profiles were used, also check to make sure that these profiles specify the same RGB colors used in the input maps of the corresponding type. CTA has created a script that can be used to detect and automatically color off pixels the nearest matching valid color, which can be found at: https://github.com/CTA5816/Misc/blob/master/correct_colors.py . This script additionally requires the Python package NumPy (https://numpy.org) to be installed.
 
 ACKNOWLEDGEMENTS
 
