@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # outputHandler.py
-# (c) 2018 Patrick Harvey (see LICENSE.txt)
+# (c) 2018-2020 Patrick Harvey (see LICENSE.txt)
 
 # Classes and functionality for reading in output profiles and
 # formatting output data.

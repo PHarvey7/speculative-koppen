@@ -1,5 +1,5 @@
 Speculative Köppen-Geiger Climate Classifier (skcc.py)
-(c) 2018-2020 Patrick Harvey [see the included LICENSE.txt]
+(c) 2018-2020 Patrick Harvey and other contributors [see the included LICENSE.txt and CONTRIBUTORS.txt]
 
 skcc is a simple command-line tool intended for automating the process of using input temperature and precipitation data in image form to classify regions according to the Köppen-Geiger climate classification system (or other systems). It is aimed at speculative or fictional worlds and is designed to work with input data formatted in a way that is more feasible for creation by analysis or fiat rather than empirical measurement. As such, it is not strictly accurate to the climate classification system, as the input model does not support this; however, the goal is that it produces a reasonable approximation.
 
@@ -61,6 +61,16 @@ In this mode the classifier extrapolates an average biotemperature for each pixe
 
 Holdridge mode takes slightly (estimated approx. 20%-25%) longer to run than the default Köppen classification mode. This is because the biotemperature computation is somewhat more computational work-per-pixel than that performed by the Köppen classifier.
 
+COLOR CORRECTION SCRIPT
+
+The script correct_colors.py by CTA, included in the repository, is intended to produce an input image from an existing input image with colors corrected to match a specific input profile. This is particularly useful if an input image was produced with anti-aliased drawing tools by accident, producing a large number of pixels with invalid colors along the borders of regions on the map. The script will produce an image that is a duplicate of the provided input, except that pixels whose colors do not match the input profile will be recolored to match the "closest" valid RGB color in the profile.
+
+The command-line arguments to this script include "input_img", which should be set to the path of the input image to produce a color-corrected version of. Likewise, "output_img" should be set to the desired path for the corrected version. The argument "colors" should be set to the input profile to correct the image to valid colors for. The "--wrap" argument can be set to x or y to state which axis should be considered longitude for the input image, to ensure correct behavior by the script around the poles.
+
+Note that this script does not support input profiles that include a default value for non-matched colors (since all colors are valid for such profiles).
+
+Running the color correction script requires the additional Python package NumPy (see https://numpy.org) to be installed in order to run.
+
 NOTES ON KNOWN WEAKNESSES
 
 The input model takes temperature and precipitation only for two extreme months of the year, which is more readily feasible to be hand-generated than twelve individual months. However, this means a precise classification for Cb/Cc and Db/Dc climate categories according to the Köppen-Geiger system cannot be done precisely by the definitions, and the output can be a bit inexact as a result regarding these particular category distinctions. Additionally, this input model means that (for example) regions whose annual precipitations are not well described via extrapolation by the mean of two annual extremes - or where precipitation and temperature extremes do not coincide temporally - can be misrepresented. As skcc.py is intended for classification on fictional worlds this can be less problematic than it is in trying to replicate real-world results based on real-world data, but these are particular notable cases and should be kept in mind.
@@ -97,7 +107,7 @@ In response to error messages:
 
 "Error: Invalid <temperature|precipitation> map color value: (<R>,<G>,<B>)"
 
---> Indicates that an input temperature or precipitation map contained pixels of a color that does not match any color in the input temperature or precipitation color profile in use. If no --tempprof or --precprof flags were specified, the script will be using the same profile as that indicated in defaultTempProfile and defaultPrecProfile respectively. If custom profiles were provided, the script will be using these. This error can commonly be caused by having used antialiased drawing tools in creating the input maps - all the colors used must be pixel-exact, so avoid 'paintbrush' type tools and the like for constructing the input maps. If custom profiles were used, also check to make sure that these profiles specify the same RGB colors used in the input maps of the corresponding type. CTA has created a script that can be used to detect and automatically color off pixels the nearest matching valid color, which can be found at: https://github.com/CTA5816/Misc/blob/master/correct_colors.py . This script additionally requires the Python package NumPy (https://numpy.org) to be installed.
+--> Indicates that an input temperature or precipitation map contained pixels of a color that does not match any color in the input temperature or precipitation color profile in use. If no --tempprof or --precprof flags were specified, the script will be using the same profile as that indicated in defaultTempProfile and defaultPrecProfile respectively. If custom profiles were provided, the script will be using these. This error can commonly be caused by having used antialiased drawing tools in creating the input maps - all the colors used must be pixel-exact, so avoid 'paintbrush' type tools and the like for constructing the input maps. If custom profiles were used, also check to make sure that these profiles specify the same RGB colors used in the input maps of the corresponding type. Ideally you should ensure only valid colors are used in your input images, to ensure expected results; however the color correction script (see above) can also be used to automate correcting "off" colors such as those that might be produced by anti-aliased drawing tools.
 
 ACKNOWLEDGEMENTS
 

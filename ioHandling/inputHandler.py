@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # inputHandler.py
-# (c) 2019 Patrick Harvey (see LICENSE.txt)
+# (c) 2019-2020 Patrick Harvey (see LICENSE.txt)
 
 # Classes and functionality for reading in input profiles and
 # interpreting input data.

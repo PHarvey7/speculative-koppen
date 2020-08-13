@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Speculative Köppen-Geiger Climate Classifier
-# (c) 2018 Patrick Harvey (see LICENSE.txt)
+# (c) 2018-2020 Patrick Harvey (see LICENSE.txt)
 
 import sys, getopt, itertools, re, time
 from PIL import Image

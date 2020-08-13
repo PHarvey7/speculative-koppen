@@ -1,0 +1,1 @@
+If submitting a pull request for skcc, please add your name to the file CONTRIBUTORS.txt as part of the changes.
