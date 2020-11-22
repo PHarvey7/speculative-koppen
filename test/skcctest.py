@@ -32,6 +32,9 @@ def getBoxesInputsSwappedPrecipitations():
 def getProfiaInputsPrecipOcean():
     return getTestDirPath('ProfiaTempJul.png'), getTestDirPath('ProfiaTempJan.png'), getTestDirPath('ProfiaPrecJul.png'), getTestDirPath('ProfiaPrecJanExtraOcean.png')
 
+def getProfiaInputsPrecipOcean2():
+    return getTestDirPath('ProfiaTempJul.png'), getTestDirPath('ProfiaTempJan.png'), getTestDirPath('ProfiaPrecJulExtraOcean.png'), getTestDirPath('ProfiaPrecJan.png')
+
 def getProfiaInputsBadPixel():
     return getTestDirPath('ProfiaTempJul.png'), getTestDirPath('ProfiaTempJan.png'), getTestDirPath('ProfiaPrecJulBadPixel.png'), getTestDirPath('ProfiaPrecJan.png')
 
@@ -249,6 +252,25 @@ def test11Clean():
     dPaths = [outputPath]
     deleteFiles(dPaths)
 
+def test12Fn():
+    tempProf = InputProfile(tColorTableDefault, [defaultOceanColor])
+    precProf = InputProfile(pColorTableDefault, [defaultOceanColor])
+    outProf = OutputProfile(kColorTableDefault, defaultOceanColor, defaultUnknownColor)
+
+    outputPath = getTestDirPath('test12-out.png')
+    tempnsPath, tempnwPath, precnsPath, precnwPath = getProfiaInputsPrecipOcean2()
+
+    comparePath = getTestDirPath('ProfiaOutputPrecipOcean2.png')
+
+    outputToFile(outputPath, buildOutput(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf))
+
+    return compareImages(outputPath, comparePath)
+
+def test12Clean():
+    outputPath = getTestDirPath('test12-out.png')
+    dPaths = [outputPath]
+    deleteFiles(dPaths)
+
 def runAll(doCleanup):
     tests = []
     tests.append(ImgTest('All default profiles - Profia test', test1Fn, test1Clean))
@@ -262,6 +284,7 @@ def runAll(doCleanup):
     tests.append(ImgTest('Test of input profiles with (Default) colors - Ball test', test9Fn, test9Clean))
     tests.append(ImgTest('Test that correct error is thrown for invalid colors in input profiles', test10Fn, test10Clean))
     tests.append(ImgTest('Test of input profiles that (Default) to ocean - Profia test', test11Fn, test11Clean))
+    tests.append(ImgTest('Test for bugfix of ocean detection condition for pixels that are ocean when others have land', test12Fn, test12Clean))
     runTests(tests, doCleanup)
 
 if __name__ == '__main__':
