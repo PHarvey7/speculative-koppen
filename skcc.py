@@ -10,7 +10,7 @@ from utils.errors import SKCCError
 from ioHandling.inputHandler import readInputProfile, InputProfile
 from ioHandling.outputHandler import readOutputProfile, OutputProfile
 
-versionNumber = '0.0.7'
+versionNumber = '0.0.8'
 
 modes = {'koppen', 'holdridge'}
 
@@ -112,6 +112,10 @@ def convertPixelData(pxTuple, tempProfile, precProfile, isNorthernHemis):
         return ((getTemperatureCategory(pxTuple[1], tempProfile), getTemperatureCategory(pxTuple[0], tempProfile)),
                 (getPrecipCategory(pxTuple[3], precProfile), getPrecipCategory(pxTuple[2], precProfile)))
 
+# Returns True iff any color in the pixel is ignored for the input profiles.
+def pixelTupleIsIgnored(pxTuple, tempProf, precProf):
+    return any(tempProf.isIgnored(px) for px in pxTuple[0:2]) or any(precProf.isIgnored(px) for px in pxTuple[2:4])
+
 # Returns the climate letter (first part) of the climate classification
 # based on the temperature and assuming it is not arid
 def getTemperatureType(tempTuple):
@@ -210,8 +214,7 @@ def getSeasonalPattern(tType, tempTuple):
 def getClimateColor(pxTuple, tempProfile, precProfile, outProfile, isNorthernHemis):
     # pxTuple contains a tuple of four pixels, for (temp1, temp2, precip1, precip2).
     # If this pixel in any input has the ocean color we treat this pixel as ocean and ignore it.
-    if (tempProfile.isIgnored(pxTuple[0]) or pxTuple[1] == tempProfile.isIgnored(pxTuple[1]) or
-        pxTuple[2] == precProfile.isIgnored(pxTuple[2]) or precProfile.isIgnored(pxTuple[3])):
+    if pixelTupleIsIgnored(pxTuple, tempProfile, precProfile):
         return outProfile.ignoredColor
     else:
         tempTuple, precTuple = convertPixelData(pxTuple, tempProfile, precProfile, isNorthernHemis)
@@ -358,8 +361,7 @@ def lookupLifeZoneColor(bioTemp, precTotal, outProfile):
 # Given an input pixel from each input map, returns an output color value
 # corresponding to its Holdridge life zone category according to the output profile's color mapping.
 def getLifeZoneColor(pxTuple, tempProfile, precProfile, outProfile):
-    if (tempProfile.isIgnored(pxTuple[0]) or pxTuple[1] == tempProfile.isIgnored(pxTuple[1]) or
-        pxTuple[2] == precProfile.isIgnored(pxTuple[2]) or precProfile.isIgnored(pxTuple[3])):
+    if pixelTupleIsIgnored(pxTuple, tempProfile, precProfile):
         return outProfile.ignoredColor
     else:
         tempTuple = (getTemperatureCategory(pxTuple[0], tempProfile), getTemperatureCategory(pxTuple[1], tempProfile))
