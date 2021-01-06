@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from imgtest import ImgTest, compareImages, deleteFiles, runTests
 from skcc import outputToFile, buildOutput, tColorTableDefault, defaultOceanColor, pColorTableDefault, kColorTableDefault, readAndValidateKoppenOutputProfile, defaultUnknownColor, hColorTableDefault
 from ioHandling.inputHandler import readInputProfile, InputProfile
-from ioHandling.outputHandler import OutputProfile
+from ioHandling.outputHandler import readOutputProfile, OutputProfile
 from utils.errors import SKCCError
 
 def getTestDirPath(fname):
@@ -271,6 +271,45 @@ def test12Clean():
     dPaths = [outputPath]
     deleteFiles(dPaths)
 
+def test13Fn():
+    tempProf = InputProfile(tColorTableDefault, [defaultOceanColor])
+    precProf = InputProfile(pColorTableDefault, [defaultOceanColor])
+    outProf = readOutputProfile(getTestDirPath('testCustomColorOceanOutputProfile'))
+
+    outputPath = getTestDirPath('test13-out.png')
+    tempnsPath, tempnwPath, precnsPath, precnwPath = getProfiaInputs()
+
+    comparePath = getTestDirPath('ProfiaCustomOceanOutput.png')
+
+    outputToFile(outputPath, buildOutput(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf))
+
+    return compareImages(outputPath, comparePath)
+
+def test13Clean():
+    outputPath = getTestDirPath('test13-out.png')
+    dPaths = [outputPath]
+    deleteFiles(dPaths)    
+
+def test14Fn():
+    tempProf = InputProfile(tColorTableDefault, [defaultOceanColor])
+    precProf = InputProfile(pColorTableDefault, [defaultOceanColor])
+    outProf = readOutputProfile(getTestDirPath('testCustomColorOceanOutputProfile2'))
+
+    outputPath = getTestDirPath('test14-out.png')
+    tempnsPath, tempnwPath, precnsPath, precnwPath = getProfiaInputs()
+
+    comparePath = getTestDirPath('ProfiaCustomOceanOutput.png')
+
+    outputToFile(outputPath, buildOutput(tempnsPath, tempnwPath, precnsPath, precnwPath, tempProf, precProf, outProf))
+
+    return compareImages(outputPath, comparePath)
+
+def test14Clean():
+    outputPath = getTestDirPath('test14-out.png')
+    dPaths = [outputPath]
+    deleteFiles(dPaths)    
+
+
 def runAll(doCleanup):
     tests = []
     tests.append(ImgTest('All default profiles - Profia test', test1Fn, test1Clean))
@@ -285,6 +324,8 @@ def runAll(doCleanup):
     tests.append(ImgTest('Test that correct error is thrown for invalid colors in input profiles', test10Fn, test10Clean))
     tests.append(ImgTest('Test of input profiles that (Default) to ocean - Profia test', test11Fn, test11Clean))
     tests.append(ImgTest('Test for bugfix of ocean detection condition for pixels that are ocean when others have land', test12Fn, test12Clean))
+    tests.append(ImgTest('Test for fix of custom output profile reading missing the Ocean keyword', test13Fn, test13Clean))
+    tests.append(ImgTest('Test complementing the Ocean keyword fix to check that the Ignored keyword has the same effect', test14Fn, test14Clean))
     runTests(tests, doCleanup)
 
 if __name__ == '__main__':

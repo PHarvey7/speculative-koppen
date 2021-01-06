@@ -37,7 +37,7 @@ def readOutputProfile(fname):
                     key = rmatch.group(1).strip()
                     if ((rval < 0) or (rval > 255) or (gval < 0) or (gval > 255) or (bval < 0) or (bval > 255)):
                         raise SKCCError('Invalid RGB color in output profile: ' + str((rval, gval, bval)))
-                    if (key == 'Ignored'):
+                    if (key == 'Ignored') or (key == 'Ocean'):
                         ignColor = (rval, gval, bval)
                     if (key == 'Unknown'):
                         unknownColor = (rval, gval, bval)
